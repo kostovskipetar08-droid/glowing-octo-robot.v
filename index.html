@@ -54,16 +54,7 @@
             <div class="status-title">> SYSTEM STATUS</div>
             <div id="opening-name">Starting Position</div>
             
-            <div id="variant-menu">
-                <label>> CHOOSE GAME MODE</label>
-                <select id="game-mode" onchange="showBotMenu()">
-                    <option value="">Select Mode...</option>
-                    <option value="classic">Classic Chess</option>
-                    <option value="all-kings">All-Kings Variant</option>
-                </select>
-            </div>
-
-            <div id="bot-menu" style="display: none;">
+            <div id="bot-menu">
                 <label>> SELECT OPPONENT BOT</label>
                 <select id="bot-level">
                     <option value="none">Practice Alone (Sandbox)</option>
@@ -73,7 +64,7 @@
                 </select>
             </div>
 
-            <button class="wood-btn" onclick="resetTrainer()">RESET WOODEN BOARD</button>
+            <button class="wood-btn" onclick="resetTrainer()">RESET CLASSIC BOARD</button>
         </div>
     </div>
 
@@ -89,29 +80,6 @@
                 document.getElementById("main-app").style.display = "flex";
                 createBoard();
             } else { alert("ACCESS DENIED"); }
-        }
-
-        function showBotMenu() {
-            const mode = document.getElementById("game-mode").value;
-            if (mode === "classic") { chess.reset(); finalizeMenu(); }
-            else if (mode === "all-kings") { setupAllKingsBoard(); finalizeMenu(); }
-        }
-
-        function finalizeMenu() {
-            document.getElementById("variant-menu").style.display = "none";
-            document.getElementById("bot-menu").style.display = "block";
-            updateBoardState();
-        }
-
-        function setupAllKingsBoard() {
-            chess.clear();
-            for (let i = 0; i < 8; i++) {
-                let col = String.fromCharCode(97 + i);
-                chess.put({ type: 'k', color: 'b' }, col + '8');
-                chess.put({ type: 'k', color: 'b' }, col + '7');
-                chess.put({ type: 'k', color: 'w' }, col + '2');
-                chess.put({ type: 'k', color: 'w' }, col + '1');
-            }
         }
 
         function createBoard() {
@@ -157,13 +125,10 @@
                 }
             });
             const hist = chess.history().join(" ");
-            document.getElementById("opening-name").innerText = openings[hist] || "Custom Position";
+            document.getElementById("opening-name").innerText = openings[hist] || "Classic Chess";
         }
 
         function resetTrainer() { 
-            document.getElementById("variant-menu").style.display = "block";
-            document.getElementById("bot-menu").style.display = "none";
-            document.getElementById("game-mode").value = "";
             chess.reset();
             selectedSquare = null; 
             updateBoardState();
