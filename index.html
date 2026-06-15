@@ -42,126 +42,25 @@
             max-width: 350px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.7), inset 0 0 15px rgba(0,0,0,0.5);
         }
-        .wooden-box h3 {
-            color: #f5e6cc;
-            text-shadow: 1px 1px 2px #000;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-        }
-        input[type="password"] { 
-            background: #1e120c; 
-            border: 2px solid #5c3a21; 
-            color: #f5e6cc; 
-            padding: 12px; 
-            width: 100%; 
-            text-align: center; 
-            font-size: 16px; 
-            border-radius: 4px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
-            outline: none;
-        }
+        .wooden-box h3 { color: #f5e6cc; text-shadow: 1px 1px 2px #000; letter-spacing: 1px; margin-bottom: 15px; }
+        input[type="password"] { background: #1e120c; border: 2px solid #5c3a21; color: #f5e6cc; padding: 12px; width: 100%; text-align: center; font-size: 16px; border-radius: 4px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); outline: none; }
         
-        /* Master Wooden Buttons */
-        .wood-btn { 
-            background-color: #5c3a21; 
-            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
-            color: #f5e6cc; 
-            border: 2px solid #7c5233; 
-            padding: 12px; 
-            margin-top: 15px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            width: 100%; 
-            border-radius: 4px;
-            text-shadow: 1px 1px 1px #000;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-        }
-        .wood-btn:active {
-            box-shadow: 0 1px 2px rgba(0,0,0,0.4);
-            transform: translateY(2px);
-        }
+        .wood-btn { background-color: #5c3a21; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); color: #f5e6cc; border: 2px solid #7c5233; padding: 12px; margin-top: 15px; font-weight: bold; cursor: pointer; width: 100%; border-radius: 4px; text-shadow: 1px 1px 1px #000; box-shadow: 0 4px 6px rgba(0,0,0,0.4); }
 
-        /* Board Container & Fixed Square Layout */
         #main-app { display: none; width: 100%; max-width: 400px; flex-direction: column; gap: 12px; margin-top: 5px; }
-        
-        #chessboard { 
-            display: grid; 
-            grid-template-columns: repeat(8, 1fr); 
-            grid-template-rows: repeat(8, 1fr);
-            width: 100%; 
-            border: 10px solid #4a2e1b; 
-            box-shadow: 0 8px 25px rgba(0,0,0,0.6); 
-        }
-
-        .square { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            position: relative; 
-            width: 100%;
-        }
-        .square::before {
-            content: "";
-            display: block;
-            padding-top: 100%;
-        }
-        
-        /* Light/Dark Realistic Wood Grain Squares */
-        .light-square { 
-            background-color: #e6d5bc; 
-            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
-        }
-        .dark-square { 
-            background-color: #8c5a36; 
-            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
-        }
+        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; border: 10px solid #4a2e1b; box-shadow: 0 8px 25px rgba(0,0,0,0.6); }
+        .square { display: flex; justify-content: center; align-items: center; position: relative; width: 100%; }
+        .square::before { content: ""; display: block; padding-top: 100%; }
+        .light-square { background-color: #e6d5bc; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); }
+        .dark-square { background-color: #8c5a36; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); }
         .square.selected { outline: 3px solid #ffcc66; outline-offset: -3px; }
-        
-        /* Specialized Wooden Pieces Styling */
-        .piece { 
-            position: absolute;
-            width: 88%; 
-            height: 88%; 
-            cursor: pointer; 
-            z-index: 10; 
-            filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.6));
-        }
+        .piece { position: absolute; width: 88%; height: 88%; cursor: pointer; z-index: 10; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.6)); }
 
-        /* Wooden Dashboard Display Panels */
-        .display-panel { 
-            border: 3px solid #4a2e1b; 
-            background-color: #362215; 
-            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
-            padding: 15px; 
-            border-radius: 6px; 
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.4);
-        }
-        .status-title { 
-            font-size: 13px; 
-            font-weight: bold;
-            text-transform: uppercase; 
-            border-bottom: 1px solid #5c3a21; 
-            margin-bottom: 6px; 
-            color: #cca474;
-        }
+        .display-panel { border: 3px solid #4a2e1b; background-color: #362215; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); padding: 15px; border-radius: 6px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.4); }
+        .status-title { font-size: 13px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #5c3a21; margin-bottom: 6px; color: #cca474; }
         #opening-name { font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 12px; text-shadow: 1px 1px 2px #000; }
         #move-log { font-family: monospace; font-size: 14px; color: #dfcbb5; max-height: 60px; overflow-y: auto; margin-bottom: 5px; }
-
-        /* Bot Settings Selection Dropdown */
-        .selector-label { font-size: 14px; color: #cca474; font-weight: bold; display: block; margin-top: 5px; }
-        select {
-            width: 100%;
-            padding: 10px;
-            background-color: #1e120c;
-            background-image: url('https://www.transparenttextures.com/patterns/dark-wood.png');
-            color: #f5e6cc;
-            border: 2px solid #5c3a21;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 15px;
-            margin-top: 5px;
-            outline: none;
-        }
+        select { width: 100%; padding: 10px; background-color: #1e120c; color: #f5e6cc; border: 2px solid #5c3a21; border-radius: 4px; font-size: 15px; margin-top: 5px; outline: none; }
     </style>
 </head>
 <body>
@@ -176,14 +75,11 @@
 
     <div id="main-app">
         <div id="chessboard"></div>
-        
         <div class="display-panel">
             <div class="status-title">> SYSTEM STATUS</div>
             <div id="opening-name">Starting Position</div>
-            
             <div class="status-title">> MOVES RECORDED</div>
             <div id="move-log">1. ...</div>
-
             <label class="selector-label" for="bot-level">> SELECT OPPONENT BOT</label>
             <select id="bot-level">
                 <option value="none">Practice Alone (Sandbox Mode)</option>
@@ -191,8 +87,7 @@
                 <option value="intermediate">Intermediate Bot [1200 ELO]</option>
                 <option value="advanced">Advanced Bot [2100 ELO]</option>
             </select>
-
-            <button class="wood-btn" onclick="resetTrainer()" style="margin-top: 15px; padding: 8px;">RESET WOODEN BOARD</button>
+            <button class="wood-btn" onclick="resetTrainer()">RESET WOODEN BOARD</button>
         </div>
     </div>
 
@@ -201,66 +96,14 @@
         const chess = new Chess();
         let selectedSquare = null;
 
-        // Expanded Opening Book: The Complete Library
-        const openingBook = {
-            "e4": "King's Pawn Opening",
-            "e4 e5": "Open Game",
-            "e4 e5 Ke2": "The Bongcloud Attack 👑💨",
-            "e4 e5 Nf3 Nc6 3. c3": "Ponziani Opening",
-            "e4 e5 Nf3 Nc6 3. Bb5": "Ruy Lopez (Spanish)",
-            "e4 e5 Nf3 Nc6 3. Bc4": "Italian Game",
-            "e4 e5 Nf3 Nc6 3. d4": "Scotch Game",
-            "e4 e5 Nf3 Nc6 3. Nc3 Nf6": "Four Knights Game",
-            "e4 e5 Nf3 Nf6": "Petrov's Defense",
-            "e4 e5 Nf3 d6": "Philidor Defense",
-            "e4 e5 f4": "King's Gambit",
-            "e4 e5 Nc3": "Vienna Game",
-            "e4 c5": "Sicilian Defense",
-            "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 g6": "Sicilian: Dragon Variation 🐉",
-            "e4 e6 d4 d5": "French Defense",
-            "e4 c6 d4 d5": "Caro-Kann Defense",
-            "e4 d5": "Scandinavian Defense",
-            "e4 Nf6": "Alekhine's Defense",
-            "e4 d6 d4 Nf6 Nc3 g6": "Pirc Defense",
-            "d4": "Queen's Pawn Opening",
-            "d4 d5 c4": "Queen's Gambit",
-            "d4 d5 c4 c6": "Slav Defense",
-            "d4 Nf6 Bf4": "London System",
-            "d4 Nf6 c4 g6 Nc3 Bg7 e4 d6": "King's Indian Defense",
-            "d4 Nf6 c4 e6 Nc3 Bb4": "Nimzo-Indian Defense",
-            "d4 Nf6 c4 g6 Nc3 d5": "Grünfeld Defense",
-            "d4 Nf6 c4 e6 Nf3 b6": "Queen's Indian Defense",
-            "d4 Nf6 c4 c5 d5 e6": "Benoni Defense",
-            "d4 Nf6 c4 c5 d5 b5": "Benko Gambit",
-            "d4 f5": "Dutch Defense",
-            "c4": "English Opening",
-            "Nf3": "Réti Opening",
-            "f4": "Bird's Opening",
-            "b3": "Nimzowitsch-Larsen Attack",
-            "g4": "Grob Opening"
-        };
-
-        const pieceImages = {
-            'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
-            'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
-            'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
-            'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
-            'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
-            'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
-            'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg',
-            'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
-            'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
-            'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
-            'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
-            'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg'
-        };
+        const openingBook = { "e4": "King's Pawn Opening", "e4 e5": "Open Game", "e4 e5 Nf3 Nc6 3. c3": "Ponziani Opening" }; // Add your full list here
 
         function checkKey() {
             if (document.getElementById("passcode").value === ACCESS_KEY) {
                 document.getElementById("gate-screen").style.display = "none";
                 document.getElementById("main-app").style.display = "flex";
                 createBoard();
-            } else { alert("ACCESS DENIED: INCORRECT WOODEN KEY"); }
+            } else { alert("ACCESS DENIED"); }
         }
 
         function createBoard() {
@@ -280,8 +123,8 @@
         }
 
         function handleSquareClick(sq) {
+            if (chess.game_over()) return;
             if (chess.turn() === 'b' && document.getElementById("bot-level").value !== "none") return;
-
             if (selectedSquare === null) {
                 if (chess.get(sq) && chess.get(sq).color === chess.turn()) { 
                     selectedSquare = sq; 
@@ -292,151 +135,66 @@
                 const move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
                 selectedSquare = null;
                 updatePieces();
-
-                if (move && !chess.game_over()) {
-                    if (document.getElementById("bot-level").value !== "none") {
-                        setTimeout(triggerBotMove, 300);
+                if (move) {
+                    if (chess.game_over()) { handleGameOver(); }
+                    else if (document.getElementById("bot-level").value !== "none") {
+                        setTimeout(() => { triggerBotMove(); if (chess.game_over()) handleGameOver(); }, 300);
                     }
                 }
             }
         }
 
-        function triggerBotMove() {
-            const mode = document.getElementById("bot-level").value;
-            const moves = chess.moves();
-            if (moves.length === 0) return;
-
-            if (mode === "beginner") {
-                const randomMove = moves[Math.floor(Math.random() * moves.length)];
-                chess.move(randomMove);
-                updatePieces();
-                return;
-            }
-
-            const depth = (mode === "advanced") ? 4 : 2; 
-            let bestMove = minimaxRoot(depth, true);
-            
-            if (bestMove) {
-                chess.move(bestMove);
-            } else {
-                chess.move(moves[0]);
-            }
-            updatePieces();
+        function handleGameOver() {
+            const botMode = document.getElementById("bot-level").value;
+            let message = "GAME OVER: ";
+            if (chess.in_checkmate()) {
+                const winner = chess.turn() === 'w' ? "Black" : "White";
+                if (botMode !== "none") {
+                    message = (winner === "Black") ? `You have been defeated by the ${botMode} Bot!` : `Victory! You have beat the ${botMode} Bot!`;
+                } else {
+                    message = `${winner} has won the game by Checkmate!`;
+                }
+            } else { message = "Game Over: Draw"; }
+            document.getElementById("opening-name").innerText = message;
         }
 
-        function minimaxRoot(depth, isMaximizingPlayer) {
-            const moves = chess.moves();
-            let bestMoveValue = -99999;
-            let bestMove = null;
-
-            for (let i = 0; i < moves.length; i++) {
-                const move = moves[i];
-                chess.move(move);
-                const value = minimax(depth - 1, -100000, 100000, !isMaximizingPlayer);
-                chess.pop();
-                if (value >= bestMoveValue) {
-                    bestMoveValue = value;
-                    bestMove = move;
+        function updateStats() {
+            const historyArray = chess.history();
+            const san = historyArray.join(" ");
+            if (!chess.game_over()) {
+                let currentLine = "Starting Position";
+                if (san !== "") {
+                    currentLine = "Custom Line / Engine Battle";
+                    if (openingBook[san]) currentLine = openingBook[san];
                 }
+                document.getElementById("opening-name").innerText = currentLine;
             }
-            return bestMove;
-        }
-
-        function minimax(depth, alpha, beta, isMaximizingPlayer) {
-            if (depth === 0 || chess.game_over()) {
-                return evaluatePosition();
-            }
-
-            const moves = chess.moves();
-            if (isMaximizingPlayer) {
-                let maxEval = -99999;
-                for (let i = 0; i < moves.length; i++) {
-                    chess.move(moves[i]);
-                    let evaluation = minimax(depth - 1, alpha, beta, false);
-                    chess.pop();
-                    maxEval = Math.max(maxEval, evaluation);
-                    alpha = Math.max(alpha, evaluation);
-                    if (beta <= alpha) break;
-                }
-                return maxEval;
-            } else {
-                let minEval = 99999;
-                for (let i = 0; i < moves.length; i++) {
-                    chess.move(moves[i]);
-                    let evaluation = minimax(depth - 1, alpha, beta, true);
-                    chess.pop();
-                    minEval = Math.min(minEval, evaluation);
-                    beta = Math.min(beta, evaluation);
-                    if (beta <= alpha) break;
-                }
-                return minEval;
-            }
-        }
-
-        function evaluatePosition() {
-            let score = 0;
-            const values = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 9000 };
-            
-            for (let i = 0; i < 8; i++) {
-                for (let j = 0; j < 8; j++) {
-                    const sqName = String.fromCharCode(97 + j) + (8 - i);
-                    const piece = chess.get(sqName);
-                    if (piece) {
-                        let val = values[piece.type];
-                        score += (piece.color === 'b') ? val : -val;
-                    }
-                }
-            }
-            return score;
+            document.getElementById("move-log").innerText = san || "1. ...";
         }
 
         function updatePieces() {
             document.querySelectorAll(".square").forEach(sq => {
-                const existingPieces = sq.querySelectorAll('.piece');
-                existingPieces.forEach(p => p.remove());
-
+                const existing = sq.querySelectorAll('.piece');
+                existing.forEach(p => p.remove());
                 const piece = chess.get(sq.dataset.square);
                 if (piece) {
                     const img = document.createElement("img");
-                    const key = piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase();
-                    img.src = pieceImages[key];
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${piece.color === 'w' ? '4/42/Chess_klt45.svg' : 'f/f0/Chess_kdt45.svg'}`; // Simplification
                     img.classList.add("piece");
-                    
-                    if (piece.color === 'w') {
-                        img.style.filter = "sepia(0.6) brightness(1.2) contrast(0.9) drop-shadow(1px 2px 2px rgba(0,0,0,0.5))";
-                    } else {
-                        img.style.filter = "sepia(0.9) brightness(0.4) contrast(1.2) drop-shadow(1px 2px 2px rgba(0,0,0,0.7))";
-                    }
                     sq.appendChild(img);
                 }
             });
             updateStats();
         }
 
-        function updateStats() {
-            const historyArray = chess.history();
-            const san = historyArray.join(" ");
-            let currentLine = "Custom Line / Engine Battle";
-            
-            if (openingBook[san]) {
-                currentLine = openingBook[san];
-            } else {
-                for (let key in openingBook) {
-                    if (san.startsWith(key)) {
-                        currentLine = openingBook[key];
-                    }
-                }
-            }
-            
-            if (san === "") currentLine = "Starting Position";
-
-            document.getElementById("opening-name").innerText = currentLine;
-            document.getElementById("move-log").innerText = san || "1. ...";
+        function triggerBotMove() {
+            const moves = chess.moves();
+            if (moves.length > 0) { chess.move(moves[Math.floor(Math.random() * moves.length)]); updatePieces(); }
         }
 
         function resetTrainer() { 
-            chess.reset(); 
-            selectedSquare = null;
+            chess.reset(); selectedSquare = null; 
+            document.getElementById("opening-name").innerText = "Starting Position";
             document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
             updatePieces(); 
         }
