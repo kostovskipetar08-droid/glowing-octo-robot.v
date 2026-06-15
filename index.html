@@ -81,17 +81,32 @@
             transform: translateY(2px);
         }
 
-        /* Board & Layout */
+        /* Board Container & Fixed Square Layout */
         #main-app { display: none; width: 100%; max-width: 400px; flex-direction: column; gap: 12px; margin-top: 5px; }
+        
+        /* Fixed: Prevents the squishing issue seen in 1781549288445.jpeg */
         #chessboard { 
             display: grid; 
             grid-template-columns: repeat(8, 1fr); 
+            grid-template-rows: repeat(8, 1fr);
             width: 100%; 
-            aspect-ratio: 1 / 1; 
             border: 10px solid #4a2e1b; 
             box-shadow: 0 8px 25px rgba(0,0,0,0.6); 
         }
-        .square { display: flex; justify-content: center; align-items: center; position: relative; }
+
+        /* Fixed: Forces individual squares to be exact 1:1 boxes regardless of scaling */
+        .square { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            position: relative; 
+            width: 100%;
+        }
+        .square::before {
+            content: "";
+            display: block;
+            padding-top: 100%;
+        }
         
         /* Light/Dark Realistic Wood Grain Squares */
         .light-square { 
@@ -106,8 +121,9 @@
         
         /* Specialized Wooden Pieces Styling */
         .piece { 
-            width: 92%; 
-            height: 92%; 
+            position: absolute;
+            width: 88%; 
+            height: 88%; 
             cursor: pointer; 
             z-index: 10; 
             filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.6));
@@ -172,7 +188,7 @@
             <div class="status-title">> MOVES RECORDED</div>
             <div id="move-log">1. ...</div>
 
-            <!-- ADJUSTED BOT SELECTOR MENU WITH 1200 ELO -->
+            <!-- BOT SELECTOR MENU -->
             <label class="selector-label" for="bot-level">> SELECT OPPONENT BOT</label>
             <select id="bot-level">
                 <option value="none">Practice Alone (Sandbox Mode)</option>
@@ -273,7 +289,6 @@
                 return;
             }
 
-            // Balanced search depth: Advanced gets 4 moves, Intermediate 1200 gets a clean 2-3 lookahead
             const depth = (mode === "advanced") ? 4 : 2; 
             let bestMove = minimaxRoot(depth, true);
             
@@ -353,7 +368,10 @@
 
         function updatePieces() {
             document.querySelectorAll(".square").forEach(sq => {
-                sq.innerHTML = "";
+                // Clear out everything except the layout spacing element
+                const existingPieces = sq.querySelectorAll('.piece');
+                existingPieces.forEach(p => p.remove());
+
                 const piece = chess.get(sq.dataset.square);
                 if (piece) {
                     const img = document.createElement("img");
@@ -401,3 +419,4 @@
     </script>
 </body>
 </html>
+
