@@ -86,7 +86,7 @@
     <div id="gate-screen">
         <div class="wooden-box">
             <h3>WOODEN TERMINAL</h3>
-            <p style="font-size: 11px; color: #cca474; margin: 10px 0 15px 0;">SECURE ENCRYPTED INTERFACE</p>
+            <p style="font-size: 11px; color: #cca474; margin: 10px 0 15px 0;">SECURE INTERFACE</p>
             <input type="password" id="passcode" placeholder="ENTER ACCESS KEY">
             <button class="wood-btn" onclick="checkKey()">INITIALIZE</button>
         </div>
@@ -157,8 +157,8 @@
     </div>
 
     <script>
-        // Secure fingerprint lock box for: pasvord.sah.otvaranja.
-        const HASHED_KEY = "64f2764f691453856860d5b128cb50047b7470f1a95e72d24485501fb3f8753d"; 
+        // Direct key comparison box for quick entry
+        const PLAIN_TEXT_KEY = "pasvord.sah.otvaranja."; 
 
         let chess = new Chess();
         let selectedSquare = null;
@@ -187,19 +187,11 @@
             "Nf3": "Reti Opening", "Nf3 d5": "Reti Opening: Standard Setup", "Nf3 d5 c4": "Reti Opening: Reti Gambit"
         };
 
-        // Encryption hashing algorithm
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function checkKey() {
+        function checkKey() {
             const inputField = document.getElementById("passcode").value;
-            const inputHashed = await sha256(inputField);
 
-            if (inputHashed === HASHED_KEY) {
+            // Direct check to prevent hashing failure loops
+            if (inputField.trim() === PLAIN_TEXT_KEY) {
                 document.getElementById("gate-screen").style.display = "none";
                 document.getElementById("main-app").style.display = "flex";
                 resetTrainer();
