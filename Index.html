@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base Center</title>
+    
+    <style>
+        /* Matrix Green Terminal Styling */
+        body {
+            background-color: #000000;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+        }
+
+        .container {
+            background-color: #050505;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: #00ff00;
+            margin-top: 0;
+            font-size: 26px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        p {
+            color: #00aa00;
+            font-size: 14px;
+        }
+
+        /* Chat Bot Interface */
+        .chat-box {
+            background-color: #000000;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            height: 180px;
+            overflow-y: auto;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .bot-msg { color: #00ff00; margin: 5px 0; }
+        .user-msg { color: #ffffff; margin: 5px 0; font-weight: bold; }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #00ff00;
+            background-color: #000000;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+
+        .btn {
+            background-color: #00ff00;
+            color: #000000;
+            border: none;
+            padding: 12px 24px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.1s ease;
+        }
+
+        .btn:hover {
+            background-color: #00aa00;
+            color: #ffffff;
+        }
+    </style>
+
+    <script>
+        // 1. Password Protection Gate
+        function runSecurityGate() {
+            let correctPassword = "пасворд.шах.отваранја."; // New stealth Cyrillic passcode
+            let enteredPassword = prompt("SECURE ACCESS REQUIRED.\nEnter the base passcode:");
+
+            if (enteredPassword !== correctPassword) {
+                alert("ACCESS DENIED.");
+                window.location.href = "https://www.google.com";
+            }
+        }
+
+        window.onload = runSecurityGate;
+
+        // 2. Local Command Bot Logic
+        function submitCommand() {
+            let inputField = document.getElementById("userInput");
+            let userText = inputField.value.trim();
+            if (userText === "") return;
+
+            let chatBox = document.getElementById("chatLog");
+
+            chatBox.innerHTML += `<p class="user-msg">> You: ${userText}</p>`;
+            
+            let cleanInput = userText.toLowerCase();
+            let botReply = "";
+
+            if (cleanInput === "/help") {
+                botReply = "Available options: /status, /ping, /clear, /about";
+            } else if (cleanInput === "/status") {
+                botReply = "All systems green. Firewall active. Encryption holding.";
+            } else if (cleanInput === "/ping") {
+                botReply = "Pong! Response delay: 7ms.";
+            } else if (cleanInput === "/about") {
+                botReply = "System Base Bot v1.0. Local protocols fully active.";
+            } else if (cleanInput === "/clear") {
+                chatBox.innerHTML = "";
+                inputField.value = "";
+                return;
+            } else {
+                botReply = "Unknown syntax. Input /help for directives.";
+            }
+
+            setTimeout(() => {
+                chatBox.innerHTML += `<p class="bot-msg">🤖 Bot: ${botReply}</p>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 200);
+
+            inputField.value = "";
+        }
+
+        function checkEnter(event) {
+            if (event.key === "Enter") {
+                submitCommand();
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Terminal Base</h1>
+        <p>System Security: Active (Password Locked)</p>
+        
+        <div class="chat-box" id="chatLog">
+            <p class="bot-msg">🤖 Bot: Connection established. Initialize login sequence. Type /help for assistance.</p>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Input system command..." onkeypress="checkEnter(event)">
+            <button class="btn" onclick="submitCommand()">EXECUTE</button>
+        </div>
+    </div>
+
+</body>
+</html>
