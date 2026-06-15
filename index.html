@@ -36,7 +36,7 @@
         .display-panel { border: 3px solid #4a2e1b; background-color: #362215; padding: 15px; border-radius: 6px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); }
         .status-title { font-size: 13px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #5c3a21; margin-bottom: 6px; color: #cca474; }
         #opening-name { font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 12px; text-shadow: 1px 1px 2px #000; }
-        #move-log { font-family: monospace; font-size: 14px; color: #dfcbb5; max-height: 60px; overflow-y: auto; margin-bottom: 10px; }
+        #move-log { font-family: monospace; font-size: 14px; color: #dfcbb5; max-height: 60px; overflow-y: auto; margin-bottom: 10px; word-wrap: break-word; }
         select { width: 100%; padding: 10px; background-color: #1e120c; color: #f5e6cc; border: 2px solid #5c3a21; margin-top: 5px; border-radius: 4px; outline: none; }
     </style>
 </head>
@@ -75,13 +75,28 @@
 
     <script>
         const ACCESS_KEY = "пасворд.шах.отваранја."; 
-        const chess = new Chess();
+        // Force the chess engine to start strictly with standard chess setup
+        let chess = new Chess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         let selectedSquare = null;
 
-        // Map piece types to Wikipedia standard chess icons
+        // Wikipedia Chess Assets for all regular pieces
         const pieceImages = {
-            'w': { 'p': '4/45/Chess_plt45.svg', 'r': '7/72/Chess_rlt45.svg', 'n': '7/70/Chess_nlt45.svg', 'b': 'b/b1/Chess_blt45.svg', 'q': '1/15/Chess_qlt45.svg', 'k': '4/42/Chess_klt45.svg' },
-            'b': { 'p': 'c/c7/Chess_pdt45.svg', 'r': 'f/ff/Chess_rdt45.svg', 'n': 'e/ef/Chess_ndt45.svg', 'b': '9/98/Chess_bdt45.svg', 'q': '4/47/Chess_qdt45.svg', 'k': 'f/f0/Chess_kdt45.svg' }
+            'w': { 
+                'p': '4/45/Chess_plt45.svg', 
+                'r': '7/72/Chess_rlt45.svg', 
+                'n': '7/70/Chess_nlt45.svg', 
+                'b': 'b/b1/Chess_blt45.svg', 
+                'q': '1/15/Chess_qlt45.svg', 
+                'k': '4/42/Chess_klt45.svg' 
+            },
+            'b': { 
+                'p': 'c/c7/Chess_pdt45.svg', 
+                'r': 'f/ff/Chess_rdt45.svg', 
+                'n': 'e/ef/Chess_ndt45.svg', 
+                'b': '9/98/Chess_bdt45.svg', 
+                'q': '4/47/Chess_qdt45.svg', 
+                'k': 'f/f0/Chess_kdt45.svg' 
+            }
         };
 
         // Book of common openings
@@ -106,6 +121,8 @@
             if (document.getElementById("passcode").value === ACCESS_KEY) {
                 document.getElementById("gate-screen").style.display = "none";
                 document.getElementById("main-app").style.display = "flex";
+                // Completely fresh boot up
+                chess.reset();
                 createBoard();
             } else { alert("ACCESS DENIED"); }
         }
@@ -129,7 +146,7 @@
         function handleSquareClick(sq) {
             if (chess.game_over()) return;
 
-            // Prevent clicking while the bot is thinking
+            // Block moves if the black AI bot is currently calculating
             if (chess.turn() === 'b' && document.getElementById("bot-level").value !== "none") return;
 
             if (selectedSquare === null) {
@@ -145,7 +162,7 @@
                 if (move) {
                     updateBoardState();
                     
-                    // If a bot is chosen and game isn't over, run bot logic
+                    // Trigger bot move
                     if (document.getElementById("bot-level").value !== "none" && !chess.game_over()) {
                         setTimeout(makeBotMove, 400);
                     }
@@ -161,14 +178,11 @@
             let selectedMove;
 
             if (botDifficulty === "beginner") {
-                // Beginner: Picks completely random moves
                 selectedMove = moves[Math.floor(Math.random() * moves.length)];
             } else if (botDifficulty === "intermediate" || botDifficulty === "advanced") {
-                // Simplified evaluation algorithm for bots
                 let bestMove = null;
                 let bestValue = -9999;
                 
-                // Shuffle moves to add variety
                 const shuffledMoves = moves.sort(() => 0.5 - Math.random());
 
                 for (let moveStr of shuffledMoves) {
@@ -176,7 +190,6 @@
                     let score = evaluatePosition();
                     chess.undo();
 
-                    // Advanced bot prioritizes checkmates and higher value tactics
                     if (botDifficulty === "advanced" && moveObj.san.includes("#")) score += 5000;
 
                     if (score > bestValue) {
@@ -191,7 +204,6 @@
             updateBoardState();
         }
 
-        // Basic heuristic point system (Black wants to maximize points here since it plays Black)
         function evaluatePosition() {
             const values = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
             let totalEvaluation = 0;
@@ -202,7 +214,6 @@
                     let p = chess.get(sq);
                     if (p) {
                         let value = values[p.type];
-                        // If it's black, add points. If it's white, subtract points.
                         totalEvaluation += (p.color === 'b') ? value : -value;
                     }
                 }
@@ -229,12 +240,10 @@
             const history = chess.history();
             const historyStr = history.join(" ");
             
-            // Check for match in history string, otherwise pull from last few moves
             let detectedOpening = "Classic Chess Sandbox";
             if (openings[historyStr]) {
                 detectedOpening = openings[historyStr];
             } else {
-                // Look for sub-variations matching the start sequence
                 for (let key in openings) {
                     if (historyStr.startsWith(key)) {
                         detectedOpening = openings[key] + " ...";
@@ -244,8 +253,6 @@
             
             if(history.length === 0) detectedOpening = "Starting Position";
             document.getElementById("opening-name").innerText = detectedOpening;
-            
-            // Update move log display
             document.getElementById("move-log").innerText = historyStr || "1. ...";
         }
 
