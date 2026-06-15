@@ -132,14 +132,14 @@
                 </select>
             </div>
 
-            <button class="wood-btn" onclick="generateGameAnalysis()">RUN HYBRID REVIEW</button>
+            <button class="wood-btn" onclick="generateGameAnalysis()">RUN PETKO REVIEW</button>
             <button class="wood-btn" style="background-color: #3d2516; margin-top: 0;" onclick="resetTrainer()">RESET BOARD</button>
         </div>
 
         <div class="analysis-card" id="analysis-panel">
-            <div class="status-title" style="color: #1baca6;">> HYBRID COACH DEBRIEF</div>
+            <div class="status-title" style="color: #1baca6;">> COACH DEBRIEF [PETKO - 1500 ELO]</div>
             <div class="coach-feedback-box" id="coach-text">
-                "Game processing completed. Click through the timeline below to examine your execution errors."
+                "Analysis complete. Click on any move down below and let's look at how you played."
             </div>
 
             <div class="status-title">> PERFORMANCE METRICS</div>
@@ -157,8 +157,8 @@
     </div>
 
     <script>
-        // Secure SHA-256 fingerprint lock box
-        const HASHED_KEY = "96d744b2ec7bf9d6dae0347ee933a36da0f17b3eb89fa08a9829f270929ef7e6"; 
+        // Secure fingerprint lock box for: pasvord.sah.otvaranja.
+        const HASHED_KEY = "64f2764f691453856860d5b128cb50047b7470f1a95e72d24485501fb3f8753d"; 
 
         let chess = new Chess();
         let selectedSquare = null;
@@ -187,7 +187,7 @@
             "Nf3": "Reti Opening", "Nf3 d5": "Reti Opening: Standard Setup", "Nf3 d5 c4": "Reti Opening: Reti Gambit"
         };
 
-        // Real-time encryption hashing algorithm
+        // Encryption hashing algorithm
         async function sha256(message) {
             const msgBuffer = new TextEncoder().encode(message);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -364,7 +364,7 @@
 
         function generateGameAnalysis() {
             if (gameMovesTimeline.length === 0) {
-                alert("Play some tactical moves first to initialize the review database!");
+                alert("Play some tactical moves first so I can analyze your game!");
                 return;
             }
 
@@ -410,22 +410,22 @@
 
             if (gameIsOver) {
                 if (chess.in_checkmate()) {
-                    finalResultText = "The game ended in a clinical checkmate execution. ";
+                    finalResultText = "Aaand that's checkmate. Game over. ";
                 } else if (chess.in_draw() || chess.in_stalemate()) {
-                    finalResultText = "The position locked down into a structural draw. ";
+                    finalResultText = "Draw. Board is completely locked up. ";
                 }
             }
 
             if (counts["Blunder"] > 0) {
-                coachExplanationText = `🤖 Coach Review: ${finalResultText}You played solid theory early on, but things went wrong on your move <strong>${firstBlunderMove}</strong>, which threw away critical material security. Keep an eye out for open lines next time!`;
+                coachExplanationText = '💬 You: "might just take that"<br><br>💬 Petko says: ' + finalResultText + 'You were hanging in there, but playing <strong>' + firstBlunderMove + '</strong> was a massive blunder. You completely gave away a piece for free! Keep your eyes open next time.';
             } else if (counts["Mistake"] > 2) {
-                coachExplanationText = `🤖 Coach Review: ${finalResultText}This was a tense match! Positionally you kept up well, but a few subtle mistakes allowed structural counterplay. Focus on safeguarding active square control.`;
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Not a bad attempt, but you made a few critical mistakes. At my level (1500 ELO), players will punish you instantly for giving up control of the center like that.';
             } else if (counts["Brilliant"] > 0) {
-                coachExplanationText = `🤖 Coach Review: ${finalResultText}Excellent positional play! Your move <strong>${firstBrilliantMove}</strong> was brilliant, turning up tactical heat and shifting engine control entirely in your favor!`;
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Wow, okay! Playing <strong>' + firstBrilliantMove + '</strong> was actually a brilliant find. You created an amazing tactical attack out of nowhere. I\'m impressed!';
             } else if (counts["Book"] > 2) {
-                coachExplanationText = `🤖 Coach Review: ${finalResultText}Fantastic setup! Your opening accuracy was perfectly aligned with book theory lines. You did an excellent job retaining positional control through the early mid-game.`;
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Solid opening! Your early moves perfectly followed established book theory. You did a great job securing your king before starting the mid-game fight.';
             } else {
-                coachExplanationText = `🤖 Coach Review: ${finalResultText}A solid sandbox practice line. No major catastrophic tactical blunders were committed. Keep reviewing tactical profiles to find even faster attacking options!`;
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'A clean game. You didn\'t make any catastrophic errors or blunders. Let\'s start another match and see if you can find some faster attacking lines!';
             }
 
             document.getElementById("coach-text").innerHTML = coachExplanationText;
