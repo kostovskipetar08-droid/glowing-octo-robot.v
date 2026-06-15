@@ -84,7 +84,6 @@
         /* Board Container & Fixed Square Layout */
         #main-app { display: none; width: 100%; max-width: 400px; flex-direction: column; gap: 12px; margin-top: 5px; }
         
-        /* Fixed: Prevents the squishing issue seen in 1781549288445.jpeg */
         #chessboard { 
             display: grid; 
             grid-template-columns: repeat(8, 1fr); 
@@ -94,7 +93,6 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.6); 
         }
 
-        /* Fixed: Forces individual squares to be exact 1:1 boxes regardless of scaling */
         .square { 
             display: flex; 
             justify-content: center; 
@@ -168,7 +166,6 @@
 </head>
 <body>
 
-    <!-- SECURE WOODEN LOCKSCREEN -->
     <div id="gate-screen">
         <div class="wooden-box">
             <h3>WOODEN TERMINAL</h3>
@@ -177,7 +174,6 @@
         </div>
     </div>
 
-    <!-- MAIN TRAINING ENGINE INTERFACE -->
     <div id="main-app">
         <div id="chessboard"></div>
         
@@ -188,7 +184,6 @@
             <div class="status-title">> MOVES RECORDED</div>
             <div id="move-log">1. ...</div>
 
-            <!-- BOT SELECTOR MENU -->
             <label class="selector-label" for="bot-level">> SELECT OPPONENT BOT</label>
             <select id="bot-level">
                 <option value="none">Practice Alone (Sandbox Mode)</option>
@@ -206,9 +201,13 @@
         const chess = new Chess();
         let selectedSquare = null;
 
+        // Expanded Opening Book
         const openingBook = {
             "e4": "King's Pawn Opening",
+            "e4 e5": "Open Game",
+            "e4 e5 Ke2": "The Bongcloud Attack 👑💨",
             "e4 c5": "Sicilian Defense",
+            "e4 c6": "Caro-Kann Defense",
             "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 g6": "Sicilian Defense: Dragon Variation 🐉",
             "d4": "Queen's Pawn Opening",
             "d4 d5 Nf3 Nf6 Bf4": "The London System",
@@ -368,7 +367,6 @@
 
         function updatePieces() {
             document.querySelectorAll(".square").forEach(sq => {
-                // Clear out everything except the layout spacing element
                 const existingPieces = sq.querySelectorAll('.piece');
                 existingPieces.forEach(p => p.remove());
 
@@ -391,9 +389,11 @@
         }
 
         function updateStats() {
-            const san = chess.history().join(" ");
+            const historyArray = chess.history();
+            const san = historyArray.join(" ");
             let currentLine = "Custom Line / Engine Battle";
             
+            // Check for exact match or prefix matches
             if (openingBook[san]) {
                 currentLine = openingBook[san];
             } else {
