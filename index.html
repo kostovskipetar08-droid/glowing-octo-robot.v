@@ -194,13 +194,11 @@
             } else {
                 document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
                 
-                let evalBefore = evaluatePosition();
                 const move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
                 selectedSquare = null;
                 
                 if (move) {
-                    let evalAfter = evaluatePosition();
-                    determineMoveRating(move, evalBefore, evalAfter);
+                    determineMoveRating(move);
                     updateBoardState();
                     
                     if (document.getElementById("bot-level").value !== "none" && !chess.game_over()) {
@@ -216,7 +214,6 @@
 
             const botDifficulty = document.getElementById("bot-level").value;
             let selectedMove;
-            let evalBefore = evaluatePosition();
 
             if (botDifficulty === "beginner") {
                 selectedMove = moves[Math.floor(Math.random() * moves.length)];
@@ -244,16 +241,16 @@
             }
 
             let finalMoveObj = chess.move(selectedMove.san);
-            let evalAfter = evaluatePosition();
-            determineMoveRating(finalMoveObj, evalBefore, evalAfter);
+            determineMoveRating(finalMoveObj);
             updateBoardState();
         }
 
-        function determineMoveRating(move, before, after) {
+        // Updated Evaluation Engine with Strict Book Move Override
+        function determineMoveRating(move) {
             const historyStr = chess.history().join(" ");
             
+            // 1. Core Book Move Validation (Absolute Priority)
             let isBook = false;
-            // Check if current position chain matches any known starting sequence or strict variation
             if (openings[historyStr]) {
                 isBook = true;
             } else {
@@ -262,29 +259,46 @@
                 }
             }
 
+            // Immediately apply Book Move visual and STOP function execution if true!
+            if (isBook) {
+                lastMoveVisuals = { targetSquare: move.to, symbol: "Book", cssClass: "badge-book" };
+                return;
+            }
+
+            // 2. Check for Immediate Checkmate Strikes
+            if (move.san.includes("#")) {
+                lastMoveVisuals = { targetSquare: move.to, symbol: "!!", cssClass: "badge-brilliant" };
+                return;
+            }
+
+            // 3. Lookahead Hanging Piece Assessment
+            const pieceValues = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
+            let hungPieceValue = 0;
+
+            let opponentReplies = chess.moves({ verbose: true });
+            for (let reply of opponentReplies) {
+                if (reply.captured) {
+                    let targetValue = pieceValues[reply.captured];
+                    let attackerValue = pieceValues[reply.piece];
+                    
+                    if (targetValue > hungPieceValue && targetValue >= attackerValue) {
+                        hungPieceValue = targetValue;
+                    }
+                }
+            }
+
+            // 4. Fallback Rating Classification
             let symbol = "";
             let cssClass = "";
 
-            // If it is an active opening sequence, mark it as Book Move directly!
-            if (isBook) {
-                symbol = "Book";
-                cssClass = "badge-book";
-            } else if (move.san.includes("#")) {
+            if (hungPieceValue >= 50) { 
+                symbol = "??"; cssClass = "badge-blunder"; 
+            } else if (hungPieceValue >= 30) {
+                symbol = "?"; cssClass = "badge-bad";
+            } else if (move.captured && pieceValues[move.captured] >= 30) {
                 symbol = "!!"; cssClass = "badge-brilliant";
-            } else if (move.captured && (move.captured === 'q' || move.captured === 'r')) {
-                symbol = "!!"; cssClass = "badge-brilliant"; 
             } else {
-                let sideThatMoved = (chess.turn() === 'b') ? 'w' : 'b'; 
-                let change = after - before;
-                let scoreDiff = (sideThatMoved === 'w') ? change : -change;
-
-                if (scoreDiff <= -25) {
-                    symbol = "??"; cssClass = "badge-blunder";   
-                } else if (scoreDiff <= -8) {
-                    symbol = "?"; cssClass = "badge-bad";       
-                } else {
-                    symbol = "!"; cssClass = "badge-good";       
-                }
+                symbol = "!"; cssClass = "badge-good";
             }
 
             lastMoveVisuals = { targetSquare: move.to, symbol: symbol, cssClass: cssClass };
