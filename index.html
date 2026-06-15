@@ -80,13 +80,26 @@
             <div id="opening-name">Starting Position</div>
             <div class="status-title">> MOVES RECORDED</div>
             <div id="move-log">1. ...</div>
-            <label class="selector-label" for="bot-level">> SELECT OPPONENT BOT</label>
-            <select id="bot-level">
-                <option value="none">Practice Alone (Sandbox Mode)</option>
-                <option value="beginner">Beginner Bot [600 ELO]</option>
-                <option value="intermediate">Intermediate Bot [1200 ELO]</option>
-                <option value="advanced">Advanced Bot [2100 ELO]</option>
-            </select>
+            
+            <div id="variant-menu">
+                <label class="selector-label">> CHOOSE GAME MODE</label>
+                <select id="game-mode" onchange="showBotMenu()">
+                    <option value="">Select Mode...</option>
+                    <option value="classic">Classic Chess</option>
+                    <option value="all-kings">All-Kings Variant</option>
+                </select>
+            </div>
+
+            <div id="bot-menu" style="display: none;">
+                <label class="selector-label">> SELECT OPPONENT BOT</label>
+                <select id="bot-level">
+                    <option value="none">Practice Alone (Sandbox)</option>
+                    <option value="beginner">Beginner Bot [600 ELO]</option>
+                    <option value="intermediate">Intermediate Bot [1200 ELO]</option>
+                    <option value="advanced">Advanced Bot [2100 ELO]</option>
+                </select>
+            </div>
+
             <button class="wood-btn" onclick="resetTrainer()">RESET WOODEN BOARD</button>
         </div>
     </div>
@@ -96,7 +109,7 @@
         const chess = new Chess();
         let selectedSquare = null;
 
-        const openingBook = { "e4": "King's Pawn Opening", "e4 e5": "Open Game", "e4 e5 Nf3 Nc6 3. c3": "Ponziani Opening" }; // Add your full list here
+        const openingBook = { "e4": "King's Pawn Opening", "e4 e5": "Open Game", "e4 e5 Nf3 Nc6 3. c3": "Ponziani Opening" };
 
         function checkKey() {
             if (document.getElementById("passcode").value === ACCESS_KEY) {
@@ -104,6 +117,27 @@
                 document.getElementById("main-app").style.display = "flex";
                 createBoard();
             } else { alert("ACCESS DENIED"); }
+        }
+
+        function showBotMenu() {
+            const mode = document.getElementById("game-mode").value;
+            if (mode !== "") {
+                document.getElementById("variant-menu").style.display = "none";
+                document.getElementById("bot-menu").style.display = "block";
+                if (mode === "all-kings") setupAllKingsBoard();
+            }
+        }
+
+        function setupAllKingsBoard() {
+            chess.clear();
+            for (let i = 0; i < 8; i++) {
+                let col = String.fromCharCode(97 + i);
+                chess.put({ type: 'k', color: 'b' }, col + '8');
+                chess.put({ type: 'k', color: 'b' }, col + '7');
+                chess.put({ type: 'k', color: 'w' }, col + '2');
+                chess.put({ type: 'k', color: 'w' }, col + '1');
+            }
+            updatePieces();
         }
 
         function createBoard() {
@@ -179,7 +213,7 @@
                 const piece = chess.get(sq.dataset.square);
                 if (piece) {
                     const img = document.createElement("img");
-                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${piece.color === 'w' ? '4/42/Chess_klt45.svg' : 'f/f0/Chess_kdt45.svg'}`; // Simplification
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${piece.color === 'w' ? '4/42/Chess_klt45.svg' : 'f/f0/Chess_kdt45.svg'}`;
                     img.classList.add("piece");
                     sq.appendChild(img);
                 }
@@ -193,10 +227,13 @@
         }
 
         function resetTrainer() { 
+            document.getElementById("variant-menu").style.display = "block";
+            document.getElementById("bot-menu").style.display = "none";
+            document.getElementById("game-mode").value = "";
             chess.reset(); selectedSquare = null; 
             document.getElementById("opening-name").innerText = "Starting Position";
             document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
-            updatePieces(); 
+            createBoard();
         }
     </script>
 </body>
