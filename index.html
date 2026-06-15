@@ -33,6 +33,29 @@
         .square.selected { outline: 3px solid #ffcc66; outline-offset: -3px; }
         .piece { position: absolute; width: 88%; height: 88%; cursor: pointer; z-index: 10; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.5)); }
 
+        .eval-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            z-index: 20;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
+        }
+        .badge-book { background-color: #5392cd; font-size: 10px; }
+        .badge-brilliant { background-color: #1baca6; }
+        .badge-good { background-color: #81b64c; }
+        .badge-bad { background-color: #f7c04a; color: #333; text-shadow: none; }
+        .badge-blunder { background-color: #fa4141; }
+
         .captured-container { display: flex; flex-direction: column; gap: 5px; background-color: #23150d; padding: 8px; border: 2px solid #4a2e1b; border-radius: 4px; }
         .captured-row { display: flex; align-items: center; gap: 5px; min-height: 30px; font-size: 12px; color: #cca474; }
         .captured-pieces { display: flex; flex-wrap: wrap; gap: 2px; }
@@ -60,7 +83,6 @@
     <div id="main-app">
         <div id="chessboard"></div>
 
-        <!-- Captured Pieces Display Tray -->
         <div class="captured-container">
             <div class="captured-row">
                 <span>Captured White:</span>
@@ -106,6 +128,7 @@
         let chess = new Chess();
         let selectedSquare = null;
         let playerColor = 'w';
+        let lastMoveVisuals = null; 
 
         const pieceImages = {
             'w': { 'p': '4/45/Chess_plt45.svg', 'r': '7/72/Chess_rlt45.svg', 'n': '7/70/Chess_nlt45.svg', 'b': 'b/b1/Chess_blt45.svg', 'q': '1/15/Chess_qlt45.svg', 'k': '4/42/Chess_klt45.svg' },
@@ -117,7 +140,15 @@
             "e4 e5 Nf3 Nc6": "Open Game: Normal Variation", "e4 e5 Nf3 Nc6 Bb5": "Ruy Lopez",
             "e4 e5 Nf3 Nc6 Bc4": "Italian Game", "e4 c5": "Sicilian Defense", "d4": "Queen's Pawn Opening",
             "d4 d5": "Closed Game", "d4 d5 c4": "Queen's Gambit", "e4 e6": "French Defense",
-            "e4 d6": "Pirc Defense", "e4 c6": "Caro-Kann Defense", "d4 Nf6": "Indian Defense"
+            "e4 d6": "Pirc Defense", "e4 c6": "Caro-Kann Defense", "d4 Nf6": "Indian Defense",
+            "d4 Nf6 c4 g6": "King's Indian Defense",
+            "d4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3 O-O": "King's Indian Defense: Classical Variation",
+            "e4 e5 Nf3 Nc6 c3": "Ponziani Opening",
+            "g3": "Fianchetto Opening",
+            "g3 d5 Bg2": "King's Fianchetto Opening",
+            "Nf3": "Reti Opening",
+            "Nf3 d5": "Reti Opening: Standard Setup",
+            "Nf3 d5 c4": "Reti Opening: Reti Gambit"
         };
 
         function checkKey() {
@@ -133,14 +164,10 @@
             boardElement.innerHTML = "";
             playerColor = document.getElementById("player-color").value;
 
-            // Generate square coordinates based on side selection
-            let ranks = Array.from({length: 8}, (_, i) => i); // 0 to 7
-            let files = Array.from({length: 8}, (_, i) => i); // 0 to 7
+            let ranks = Array.from({length: 8}, (_, i) => i); 
+            let files = Array.from({length: 8}, (_, i) => i); 
 
-            if (playerColor === 'b') {
-                ranks.reverse(); // Black at bottom: rank 8 becomes bottom
-                files.reverse(); // h-file on left, a-file on right
-            }
+            if (playerColor === 'b') { ranks.reverse(); files.reverse(); }
 
             for (let r of ranks) {
                 for (let f of files) {
@@ -157,8 +184,6 @@
 
         function handleSquareClick(sq) {
             if (chess.game_over()) return;
-
-            // Block input if it isn't the player's turn to move
             if (document.getElementById("bot-level").value !== "none" && chess.turn() !== playerColor) return;
 
             if (selectedSquare === null) {
@@ -168,11 +193,16 @@
                 }
             } else {
                 document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
+                
+                let evalBefore = evaluatePosition();
                 const move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
                 selectedSquare = null;
                 
                 if (move) {
+                    let evalAfter = evaluatePosition();
+                    determineMoveRating(move, evalBefore, evalAfter);
                     updateBoardState();
+                    
                     if (document.getElementById("bot-level").value !== "none" && !chess.game_over()) {
                         setTimeout(makeBotMove, 400);
                     }
@@ -181,11 +211,12 @@
         }
 
         function makeBotMove() {
-            const moves = chess.moves();
+            const moves = chess.moves({ verbose: true });
             if (moves.length === 0) return;
 
             const botDifficulty = document.getElementById("bot-level").value;
             let selectedMove;
+            let evalBefore = evaluatePosition();
 
             if (botDifficulty === "beginner") {
                 selectedMove = moves[Math.floor(Math.random() * moves.length)];
@@ -194,8 +225,8 @@
                 let bestValue = (chess.turn() === 'w') ? -9999 : 9999;
                 const shuffledMoves = moves.sort(() => 0.5 - Math.random());
 
-                for (let moveStr of shuffledMoves) {
-                    let moveObj = chess.move(moveStr);
+                for (let m of shuffledMoves) {
+                    let moveObj = chess.move(m.san);
                     let score = evaluatePosition();
                     chess.undo();
 
@@ -203,17 +234,60 @@
                         score = (chess.turn() === 'w') ? score + 5000 : score - 5000;
                     }
 
-                    if (chess.turn() === 'w') { // If bot is White, maximize score
-                        if (score > bestValue) { bestValue = score; bestMove = moveStr; }
-                    } else { // If bot is Black, minimize score
-                        if (score < bestValue) { bestValue = score; bestMove = moveStr; }
+                    if (chess.turn() === 'w') { 
+                        if (score > bestValue) { bestValue = score; bestMove = m; }
+                    } else { 
+                        if (score < bestValue) { bestValue = score; bestMove = m; }
                     }
                 }
                 selectedMove = bestMove || moves[0];
             }
 
-            chess.move(selectedMove);
+            let finalMoveObj = chess.move(selectedMove.san);
+            let evalAfter = evaluatePosition();
+            determineMoveRating(finalMoveObj, evalBefore, evalAfter);
             updateBoardState();
+        }
+
+        function determineMoveRating(move, before, after) {
+            const historyStr = chess.history().join(" ");
+            
+            let isBook = false;
+            // Check if current position chain matches any known starting sequence or strict variation
+            if (openings[historyStr]) {
+                isBook = true;
+            } else {
+                for (let key in openings) {
+                    if (key.startsWith(historyStr)) { isBook = true; break; }
+                }
+            }
+
+            let symbol = "";
+            let cssClass = "";
+
+            // If it is an active opening sequence, mark it as Book Move directly!
+            if (isBook) {
+                symbol = "Book";
+                cssClass = "badge-book";
+            } else if (move.san.includes("#")) {
+                symbol = "!!"; cssClass = "badge-brilliant";
+            } else if (move.captured && (move.captured === 'q' || move.captured === 'r')) {
+                symbol = "!!"; cssClass = "badge-brilliant"; 
+            } else {
+                let sideThatMoved = (chess.turn() === 'b') ? 'w' : 'b'; 
+                let change = after - before;
+                let scoreDiff = (sideThatMoved === 'w') ? change : -change;
+
+                if (scoreDiff <= -25) {
+                    symbol = "??"; cssClass = "badge-blunder";   
+                } else if (scoreDiff <= -8) {
+                    symbol = "?"; cssClass = "badge-bad";       
+                } else {
+                    symbol = "!"; cssClass = "badge-good";       
+                }
+            }
+
+            lastMoveVisuals = { targetSquare: move.to, symbol: symbol, cssClass: cssClass };
         }
 
         function evaluatePosition() {
@@ -223,19 +297,18 @@
                 for (let col = 0; col < 8; col++) {
                     let sq = String.fromCharCode(97 + col) + (8 - row);
                     let p = chess.get(sq);
-                    if (p) {
-                        totalEvaluation += (p.color === 'w') ? values[p.type] : -values[p.type];
-                    }
+                    if (p) { totalEvaluation += (p.color === 'w') ? values[p.type] : -values[p.type]; }
                 }
             }
             return totalEvaluation;
         }
 
         function updateBoardState() {
-            // 1. Render pieces on board
             document.querySelectorAll(".square").forEach(sq => {
-                const existing = sq.querySelectorAll('.piece');
-                existing.forEach(p => p.remove());
+                const existingPieces = sq.querySelectorAll('.piece');
+                existingPieces.forEach(p => p.remove());
+                const existingBadges = sq.querySelectorAll('.eval-badge');
+                existingBadges.forEach(b => b.remove());
                 
                 const piece = chess.get(sq.dataset.square);
                 if (piece) {
@@ -244,12 +317,17 @@
                     img.classList.add("piece");
                     sq.appendChild(img);
                 }
+
+                if (lastMoveVisuals && lastMoveVisuals.targetSquare === sq.dataset.square) {
+                    const badge = document.createElement("div");
+                    badge.classList.add("eval-badge", lastMoveVisuals.cssClass);
+                    badge.innerText = lastMoveVisuals.symbol;
+                    sq.appendChild(badge);
+                }
             });
 
-            // 2. Compute and render captured pieces
             calculateCapturedPieces();
 
-            // 3. Opening detection
             const history = chess.history();
             const historyStr = history.join(" ");
             let detectedOpening = "Classic Chess Sandbox";
@@ -267,25 +345,20 @@
         }
 
         function calculateCapturedPieces() {
-            // Standard army inventory
             const startingCounts = { 'p': 8, 'n': 2, 'b': 2, 'r': 2, 'q': 1 };
             const currentCounts = {
                 'w': { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 },
                 'b': { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 }
             };
 
-            // Count surviving elements
             for (let row = 0; row < 8; row++) {
                 for (let col = 0; col < 8; col++) {
                     let sq = String.fromCharCode(97 + col) + (8 - row);
                     let p = chess.get(sq);
-                    if (p && p.type !== 'k') {
-                        currentCounts[p.color][p.type]++;
-                    }
+                    if (p && p.type !== 'k') { currentCounts[p.color][p.type]++; }
                 }
             }
 
-            // Render White losses
             const whiteTray = document.getElementById("captured-white");
             whiteTray.innerHTML = "";
             for (let type in startingCounts) {
@@ -298,7 +371,6 @@
                 }
             }
 
-            // Render Black losses
             const blackTray = document.getElementById("captured-black");
             blackTray.innerHTML = "";
             for (let type in startingCounts) {
@@ -315,9 +387,9 @@
         function resetTrainer() { 
             chess.reset();
             selectedSquare = null; 
+            lastMoveVisuals = null; 
             createBoard();
             
-            // If playing as Black and bot is active, prompt the bot to move first
             if (document.getElementById("player-color").value === 'b' && document.getElementById("bot-level").value !== "none") {
                 setTimeout(makeBotMove, 500);
             }
@@ -325,3 +397,4 @@
     </script>
 </body>
 </html>
+
