@@ -245,7 +245,6 @@
             "Nf3": "Reti Opening", "Nf3 d5": "Reti Opening: Standard Setup", "Nf3 d5 c4": "Reti Opening: Reti Gambit"
         };
 
-        // Verifies the access key cleanly
         function verifyGateAccess() {
             const userInput = document.getElementById("gate-key").value;
             const correctKey = "pasvord.sah.otvaranja.";
@@ -300,7 +299,8 @@
                 
                 if (move) {
                     let evaluationRating = determineMoveRating(move);
-                    gameMovesTimeline.push({ san: move.san, fen: chess.fen(), rating: evaluationRating, side: playerColor });
+                    // Explicitly tracking that this side is the PLAYER
+                    gameMovesTimeline.push({ san: move.san, fen: chess.fen(), rating: evaluationRating, side: "player" });
                     updateBoardState();
                     
                     if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); return; }
@@ -346,7 +346,8 @@
 
             let finalMoveObj = chess.move(selectedMove.san);
             let evaluationRating = determineMoveRating(finalMoveObj);
-            gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: (playerColor === 'w' ? 'b' : 'w') });
+            // Explicitly tracking that this side is the BOT
+            gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: "bot" });
             updateBoardState();
 
             if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); }
@@ -421,8 +422,9 @@
             }
 
             let counts = { "Book": 0, "Brilliant": 0, "Good Move": 0, "Mistake": 0, "Blunder": 0 };
-            let firstBlunderMove = null;
-            let firstBrilliantMove = null;
+            let firstPlayerBlunder = null;
+            let firstBotBlunder = null;
+            let firstPlayerBrilliant = null;
             
             const listContainer = document.getElementById("analysis-move-list");
             listContainer.innerHTML = "";
@@ -432,8 +434,13 @@
                     counts[moveData.rating.label]++;
                 }
 
-                if (moveData.rating.label === "Blunder" && !firstBlunderMove) firstBlunderMove = moveData.san;
-                if (moveData.rating.label === "Brilliant" && !firstBlunderMove) firstBrilliantMove = moveData.san;
+                if (moveData.rating.label === "Blunder") {
+                    if (moveData.side === "player" && !firstPlayerBlunder) firstPlayerBlunder = moveData.san;
+                    if (moveData.side === "bot" && !firstBotBlunder) firstBotBlunder = moveData.san;
+                }
+                if (moveData.rating.label === "Brilliant" && moveData.side === "player" && !firstPlayerBrilliant) {
+                    firstPlayerBrilliant = moveData.san;
+                }
 
                 const moveBadge = document.createElement("span");
                 moveBadge.classList.add("review-move");
@@ -468,16 +475,19 @@
                 }
             }
 
-            if (counts["Blunder"] > 0) {
-                coachExplanationText = '💬 You: "might just take that"<br><br>💬 Petko says: ' + finalResultText + 'You were hanging in there, but playing <strong>' + firstBlunderMove + '</strong> was a massive blunder. You completely gave away a piece for free! Keep your eyes open next time.';
+            // SMART COACH FEEDBACK BREAKDOWN:
+            if (firstPlayerBlunder) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'You were hanging in there, but playing <strong>' + firstPlayerBlunder + '</strong> was a massive blunder on your part. You completely gave away a piece! Keep your eyes open next time.';
+            } else if (firstBotBlunder) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Wow, the bot completely messed up when it played <strong>' + firstBotBlunder + '</strong>! That was a catastrophic blunder. Great job capitalizing on their mistake and staying sharp!';
             } else if (counts["Mistake"] > 2) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Not a bad attempt, but you made a few critical mistakes. At my level (1500 ELO), players will punish you instantly for giving up control of the center like that.';
-            } else if (counts["Brilliant"] > 0) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Wow, okay! Playing <strong>' + firstBrilliantMove + '</strong> was actually a brilliant find. You created an amazing tactical attack out of nowhere. I\'m impressed!';
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Not a bad attempt, but there were a few critical mistakes on the board. At my level (1500 ELO), position control is everything, so try to watch the center squares closely.';
+            } else if (firstPlayerBrilliant) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Wow, outstanding focus! Finding <strong>' + firstPlayerBrilliant + '</strong> was a brilliant tactical layout. You constructed a beautiful attack out of nowhere.';
             } else if (counts["Book"] > 2) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Solid opening! Your early moves perfectly followed established book theory. You did a great job securing your king before starting the mid-game fight.';
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Excellent theoretical opening lines! Your initial development perfectly matches standard master book theory. Solid setup.';
             } else {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'A clean game. You didn\'t make any catastrophic errors or blunders. Let\'s start another match and see if you can find some faster attacking lines!';
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'A completely clean performance. No blunders, no massive errors. Let\'s setup the board again and try an aggressive attacking line!';
             }
 
             document.getElementById("coach-text").innerHTML = coachExplanationText;
