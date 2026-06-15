@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Wooden Openings Dashboard</title>
+    <title>Premium Wooden Chess Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,11 +33,18 @@
         .square.selected { outline: 3px solid #ffcc66; outline-offset: -3px; }
         .piece { position: absolute; width: 88%; height: 88%; cursor: pointer; z-index: 10; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.5)); }
 
-        .display-panel { border: 3px solid #4a2e1b; background-color: #362215; padding: 15px; border-radius: 6px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); }
-        .status-title { font-size: 13px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #5c3a21; margin-bottom: 6px; color: #cca474; }
-        #opening-name { font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 12px; text-shadow: 1px 1px 2px #000; }
-        #move-log { font-family: monospace; font-size: 14px; color: #dfcbb5; max-height: 60px; overflow-y: auto; margin-bottom: 10px; word-wrap: break-word; }
-        select { width: 100%; padding: 10px; background-color: #1e120c; color: #f5e6cc; border: 2px solid #5c3a21; margin-top: 5px; border-radius: 4px; outline: none; }
+        .captured-container { display: flex; flex-direction: column; gap: 5px; background-color: #23150d; padding: 8px; border: 2px solid #4a2e1b; border-radius: 4px; }
+        .captured-row { display: flex; align-items: center; gap: 5px; min-height: 30px; font-size: 12px; color: #cca474; }
+        .captured-pieces { display: flex; flex-wrap: wrap; gap: 2px; }
+        .captured-img { width: 22px; height: 22px; filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5)); }
+
+        .display-panel { border: 3px solid #4a2e1b; background-color: #362215; padding: 15px; border-radius: 6px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 10px; }
+        .status-title { font-size: 13px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #5c3a21; padding-bottom: 3px; color: #cca474; }
+        #opening-name { font-size: 17px; font-weight: bold; color: #ffffff; text-shadow: 1px 1px 2px #000; }
+        #move-log { font-family: monospace; font-size: 13px; color: #dfcbb5; max-height: 50px; overflow-y: auto; word-wrap: break-word; }
+        .menu-group { display: flex; flex-direction: column; gap: 4px; }
+        label { font-size: 12px; color: #cca474; font-weight: bold; }
+        select { width: 100%; padding: 8px; background-color: #1e120c; color: #f5e6cc; border: 2px solid #5c3a21; border-radius: 4px; outline: none; }
     </style>
 </head>
 <body>
@@ -52,6 +59,19 @@
 
     <div id="main-app">
         <div id="chessboard"></div>
+
+        <!-- Captured Pieces Display Tray -->
+        <div class="captured-container">
+            <div class="captured-row">
+                <span>Captured White:</span>
+                <div id="captured-white" class="captured-pieces"></div>
+            </div>
+            <div class="captured-row">
+                <span>Captured Black:</span>
+                <div id="captured-black" class="captured-pieces"></div>
+            </div>
+        </div>
+
         <div class="display-panel">
             <div class="status-title">> SYSTEM STATUS</div>
             <div id="opening-name">Starting Position</div>
@@ -59,7 +79,15 @@
             <div class="status-title">> MOVES RECORDED</div>
             <div id="move-log">1. ...</div>
             
-            <div id="bot-menu">
+            <div class="menu-group">
+                <label>> CHOOSE YOUR SIDE</label>
+                <select id="player-color" onchange="resetTrainer()">
+                    <option value="w">Play as White</option>
+                    <option value="b">Play as Black</option>
+                </select>
+            </div>
+
+            <div class="menu-group">
                 <label>> SELECT OPPONENT BOT</label>
                 <select id="bot-level">
                     <option value="none">Practice Alone (Sandbox)</option>
@@ -69,72 +97,56 @@
                 </select>
             </div>
 
-            <button class="wood-btn" onclick="resetTrainer()">RESET CLASSIC BOARD</button>
+            <button class="wood-btn" onclick="resetTrainer()">RESET BOARD</button>
         </div>
     </div>
 
     <script>
         const ACCESS_KEY = "пасворд.шах.отваранја."; 
-        // Force the chess engine to start strictly with standard chess setup
-        let chess = new Chess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        let chess = new Chess();
         let selectedSquare = null;
+        let playerColor = 'w';
 
-        // Wikipedia Chess Assets for all regular pieces
         const pieceImages = {
-            'w': { 
-                'p': '4/45/Chess_plt45.svg', 
-                'r': '7/72/Chess_rlt45.svg', 
-                'n': '7/70/Chess_nlt45.svg', 
-                'b': 'b/b1/Chess_blt45.svg', 
-                'q': '1/15/Chess_qlt45.svg', 
-                'k': '4/42/Chess_klt45.svg' 
-            },
-            'b': { 
-                'p': 'c/c7/Chess_pdt45.svg', 
-                'r': 'f/ff/Chess_rdt45.svg', 
-                'n': 'e/ef/Chess_ndt45.svg', 
-                'b': '9/98/Chess_bdt45.svg', 
-                'q': '4/47/Chess_qdt45.svg', 
-                'k': 'f/f0/Chess_kdt45.svg' 
-            }
+            'w': { 'p': '4/45/Chess_plt45.svg', 'r': '7/72/Chess_rlt45.svg', 'n': '7/70/Chess_nlt45.svg', 'b': 'b/b1/Chess_blt45.svg', 'q': '1/15/Chess_qlt45.svg', 'k': '4/42/Chess_klt45.svg' },
+            'b': { 'p': 'c/c7/Chess_pdt45.svg', 'r': 'f/ff/Chess_rdt45.svg', 'n': 'e/ef/Chess_ndt45.svg', 'b': '9/98/Chess_bdt45.svg', 'q': '4/47/Chess_qdt45.svg', 'k': 'f/f0/Chess_kdt45.svg' }
         };
 
-        // Book of common openings
         const openings = {
-            "e4": "King's Pawn Opening",
-            "e4 e5": "Open Game",
-            "e4 e5 Nf3": "King's Knight Opening",
-            "e4 e5 Nf3 Nc6": "Open Game: Normal Variation",
-            "e4 e5 Nf3 Nc6 Bb5": "Ruy Lopez (Spanish Opening)",
-            "e4 e5 Nf3 Nc6 Bc4": "Italian Game",
-            "e4 c5": "Sicilian Defense",
-            "d4": "Queen's Pawn Opening",
-            "d4 d5": "Closed Game",
-            "d4 d5 c4": "Queen's Gambit",
-            "e4 e6": "French Defense",
-            "e4 d6": "Pirc Defense",
-            "e4 c6": "Caro-Kann Defense",
-            "d4 Nf6": "Indian Defense"
+            "e4": "King's Pawn Opening", "e4 e5": "Open Game", "e4 e5 Nf3": "King's Knight Opening",
+            "e4 e5 Nf3 Nc6": "Open Game: Normal Variation", "e4 e5 Nf3 Nc6 Bb5": "Ruy Lopez",
+            "e4 e5 Nf3 Nc6 Bc4": "Italian Game", "e4 c5": "Sicilian Defense", "d4": "Queen's Pawn Opening",
+            "d4 d5": "Closed Game", "d4 d5 c4": "Queen's Gambit", "e4 e6": "French Defense",
+            "e4 d6": "Pirc Defense", "e4 c6": "Caro-Kann Defense", "d4 Nf6": "Indian Defense"
         };
 
         function checkKey() {
             if (document.getElementById("passcode").value === ACCESS_KEY) {
                 document.getElementById("gate-screen").style.display = "none";
                 document.getElementById("main-app").style.display = "flex";
-                // Completely fresh boot up
-                chess.reset();
-                createBoard();
+                resetTrainer();
             } else { alert("ACCESS DENIED"); }
         }
 
         function createBoard() {
             const boardElement = document.getElementById("chessboard");
             boardElement.innerHTML = "";
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
+            playerColor = document.getElementById("player-color").value;
+
+            // Generate square coordinates based on side selection
+            let ranks = Array.from({length: 8}, (_, i) => i); // 0 to 7
+            let files = Array.from({length: 8}, (_, i) => i); // 0 to 7
+
+            if (playerColor === 'b') {
+                ranks.reverse(); // Black at bottom: rank 8 becomes bottom
+                files.reverse(); // h-file on left, a-file on right
+            }
+
+            for (let r of ranks) {
+                for (let f of files) {
                     const square = document.createElement("div");
-                    const squareName = String.fromCharCode(97 + col) + (8 - row);
-                    square.classList.add("square", (row + col) % 2 === 0 ? "light-square" : "dark-square");
+                    const squareName = String.fromCharCode(97 + f) + (8 - r);
+                    square.classList.add("square", (r + f) % 2 === 0 ? "light-square" : "dark-square");
                     square.dataset.square = squareName;
                     square.addEventListener("click", () => handleSquareClick(squareName));
                     boardElement.appendChild(square);
@@ -146,8 +158,8 @@
         function handleSquareClick(sq) {
             if (chess.game_over()) return;
 
-            // Block moves if the black AI bot is currently calculating
-            if (chess.turn() === 'b' && document.getElementById("bot-level").value !== "none") return;
+            // Block input if it isn't the player's turn to move
+            if (document.getElementById("bot-level").value !== "none" && chess.turn() !== playerColor) return;
 
             if (selectedSquare === null) {
                 if (chess.get(sq) && chess.get(sq).color === chess.turn()) { 
@@ -161,8 +173,6 @@
                 
                 if (move) {
                     updateBoardState();
-                    
-                    // Trigger bot move
                     if (document.getElementById("bot-level").value !== "none" && !chess.game_over()) {
                         setTimeout(makeBotMove, 400);
                     }
@@ -179,10 +189,9 @@
 
             if (botDifficulty === "beginner") {
                 selectedMove = moves[Math.floor(Math.random() * moves.length)];
-            } else if (botDifficulty === "intermediate" || botDifficulty === "advanced") {
+            } else {
                 let bestMove = null;
-                let bestValue = -9999;
-                
+                let bestValue = (chess.turn() === 'w') ? -9999 : 9999;
                 const shuffledMoves = moves.sort(() => 0.5 - Math.random());
 
                 for (let moveStr of shuffledMoves) {
@@ -190,11 +199,14 @@
                     let score = evaluatePosition();
                     chess.undo();
 
-                    if (botDifficulty === "advanced" && moveObj.san.includes("#")) score += 5000;
+                    if (botDifficulty === "advanced" && moveObj.san.includes("#")) {
+                        score = (chess.turn() === 'w') ? score + 5000 : score - 5000;
+                    }
 
-                    if (score > bestValue) {
-                        bestValue = score;
-                        bestMove = moveStr;
+                    if (chess.turn() === 'w') { // If bot is White, maximize score
+                        if (score > bestValue) { bestValue = score; bestMove = moveStr; }
+                    } else { // If bot is Black, minimize score
+                        if (score < bestValue) { bestValue = score; bestMove = moveStr; }
                     }
                 }
                 selectedMove = bestMove || moves[0];
@@ -207,14 +219,12 @@
         function evaluatePosition() {
             const values = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
             let totalEvaluation = 0;
-            
             for (let row = 0; row < 8; row++) {
                 for (let col = 0; col < 8; col++) {
                     let sq = String.fromCharCode(97 + col) + (8 - row);
                     let p = chess.get(sq);
                     if (p) {
-                        let value = values[p.type];
-                        totalEvaluation += (p.color === 'b') ? value : -value;
+                        totalEvaluation += (p.color === 'w') ? values[p.type] : -values[p.type];
                     }
                 }
             }
@@ -222,6 +232,7 @@
         }
 
         function updateBoardState() {
+            // 1. Render pieces on board
             document.querySelectorAll(".square").forEach(sq => {
                 const existing = sq.querySelectorAll('.piece');
                 existing.forEach(p => p.remove());
@@ -229,40 +240,88 @@
                 const piece = chess.get(sq.dataset.square);
                 if (piece) {
                     const img = document.createElement("img");
-                    const imgPath = pieceImages[piece.color][piece.type];
-                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${imgPath}`;
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages[piece.color][piece.type]}`;
                     img.classList.add("piece");
                     sq.appendChild(img);
                 }
             });
 
-            // Handle Opening Detection display
+            // 2. Compute and render captured pieces
+            calculateCapturedPieces();
+
+            // 3. Opening detection
             const history = chess.history();
             const historyStr = history.join(" ");
-            
             let detectedOpening = "Classic Chess Sandbox";
+            
             if (openings[historyStr]) {
                 detectedOpening = openings[historyStr];
             } else {
                 for (let key in openings) {
-                    if (historyStr.startsWith(key)) {
-                        detectedOpening = openings[key] + " ...";
-                    }
+                    if (historyStr.startsWith(key)) detectedOpening = openings[key] + " ...";
                 }
             }
-            
             if(history.length === 0) detectedOpening = "Starting Position";
             document.getElementById("opening-name").innerText = detectedOpening;
             document.getElementById("move-log").innerText = historyStr || "1. ...";
         }
 
+        function calculateCapturedPieces() {
+            // Standard army inventory
+            const startingCounts = { 'p': 8, 'n': 2, 'b': 2, 'r': 2, 'q': 1 };
+            const currentCounts = {
+                'w': { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 },
+                'b': { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 }
+            };
+
+            // Count surviving elements
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    let sq = String.fromCharCode(97 + col) + (8 - row);
+                    let p = chess.get(sq);
+                    if (p && p.type !== 'k') {
+                        currentCounts[p.color][p.type]++;
+                    }
+                }
+            }
+
+            // Render White losses
+            const whiteTray = document.getElementById("captured-white");
+            whiteTray.innerHTML = "";
+            for (let type in startingCounts) {
+                let missing = startingCounts[type] - currentCounts['w'][type];
+                for(let i = 0; i < missing; i++) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages['w'][type]}`;
+                    img.classList.add("captured-img");
+                    whiteTray.appendChild(img);
+                }
+            }
+
+            // Render Black losses
+            const blackTray = document.getElementById("captured-black");
+            blackTray.innerHTML = "";
+            for (let type in startingCounts) {
+                let missing = startingCounts[type] - currentCounts['b'][type];
+                for(let i = 0; i < missing; i++) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages['b'][type]}`;
+                    img.classList.add("captured-img");
+                    blackTray.appendChild(img);
+                }
+            }
+        }
+
         function resetTrainer() { 
             chess.reset();
             selectedSquare = null; 
-            document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
-            updateBoardState();
+            createBoard();
+            
+            // If playing as Black and bot is active, prompt the bot to move first
+            if (document.getElementById("player-color").value === 'b' && document.getElementById("bot-level").value !== "none") {
+                setTimeout(makeBotMove, 500);
+            }
         }
     </script>
 </body>
 </html>
-
