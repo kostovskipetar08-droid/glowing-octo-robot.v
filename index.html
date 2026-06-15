@@ -19,47 +19,23 @@
             padding: 10px; 
         }
 
-        #gate-screen { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background-color: #1e120c; 
-            background-image: url('https://www.transparenttextures.com/patterns/dark-wood.png');
-            z-index: 9999; 
-        }
-        .wooden-box { 
-            border: 4px solid #5c3a21; 
-            background-color: #3d2516;
-            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
-            padding: 25px; 
-            text-align: center; 
-            border-radius: 8px; 
-            width: 90%; 
-            max-width: 350px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.7), inset 0 0 15px rgba(0,0,0,0.5);
-        }
-        .wooden-box h3 { color: #f5e6cc; text-shadow: 1px 1px 2px #000; letter-spacing: 1px; margin-bottom: 15px; }
-        input[type="password"] { background: #1e120c; border: 2px solid #5c3a21; color: #f5e6cc; padding: 12px; width: 100%; text-align: center; font-size: 16px; border-radius: 4px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); outline: none; }
-        
-        .wood-btn { background-color: #5c3a21; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); color: #f5e6cc; border: 2px solid #7c5233; padding: 12px; margin-top: 15px; font-weight: bold; cursor: pointer; width: 100%; border-radius: 4px; text-shadow: 1px 1px 1px #000; box-shadow: 0 4px 6px rgba(0,0,0,0.4); }
+        #gate-screen { display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #1e120c; z-index: 9999; }
+        .wooden-box { border: 4px solid #5c3a21; background-color: #3d2516; padding: 25px; text-align: center; border-radius: 8px; width: 90%; max-width: 350px; }
+        .wood-btn { background-color: #5c3a21; color: #f5e6cc; border: 2px solid #7c5233; padding: 12px; margin-top: 15px; font-weight: bold; cursor: pointer; width: 100%; border-radius: 4px; }
 
         #main-app { display: none; width: 100%; max-width: 400px; flex-direction: column; gap: 12px; margin-top: 5px; }
-        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; border: 10px solid #4a2e1b; box-shadow: 0 8px 25px rgba(0,0,0,0.6); }
+        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; border: 10px solid #4a2e1b; }
         .square { display: flex; justify-content: center; align-items: center; position: relative; width: 100%; }
         .square::before { content: ""; display: block; padding-top: 100%; }
-        .light-square { background-color: #e6d5bc; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); }
-        .dark-square { background-color: #8c5a36; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); }
+        .light-square { background-color: #e6d5bc; }
+        .dark-square { background-color: #8c5a36; }
         .square.selected { outline: 3px solid #ffcc66; outline-offset: -3px; }
-        .piece { position: absolute; width: 88%; height: 88%; cursor: pointer; z-index: 10; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.6)); }
+        .piece { position: absolute; width: 88%; height: 88%; cursor: pointer; z-index: 10; }
 
-        .display-panel { border: 3px solid #4a2e1b; background-color: #362215; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); padding: 15px; border-radius: 6px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.4); }
+        .display-panel { border: 3px solid #4a2e1b; background-color: #362215; padding: 15px; border-radius: 6px; }
         .status-title { font-size: 13px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #5c3a21; margin-bottom: 6px; color: #cca474; }
-        #opening-name { font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 12px; text-shadow: 1px 1px 2px #000; }
-        #move-log { font-family: monospace; font-size: 14px; color: #dfcbb5; max-height: 60px; overflow-y: auto; margin-bottom: 5px; }
-        select { width: 100%; padding: 10px; background-color: #1e120c; color: #f5e6cc; border: 2px solid #5c3a21; border-radius: 4px; font-size: 15px; margin-top: 5px; outline: none; }
+        #opening-name { font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 12px; }
+        select { width: 100%; padding: 10px; background-color: #1e120c; color: #f5e6cc; border: 2px solid #5c3a21; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -77,11 +53,9 @@
         <div class="display-panel">
             <div class="status-title">> SYSTEM STATUS</div>
             <div id="opening-name">Starting Position</div>
-            <div class="status-title">> MOVES RECORDED</div>
-            <div id="move-log">1. ...</div>
             
             <div id="variant-menu">
-                <label class="selector-label">> CHOOSE GAME MODE</label>
+                <label>> CHOOSE GAME MODE</label>
                 <select id="game-mode" onchange="showBotMenu()">
                     <option value="">Select Mode...</option>
                     <option value="classic">Classic Chess</option>
@@ -90,7 +64,7 @@
             </div>
 
             <div id="bot-menu" style="display: none;">
-                <label class="selector-label">> SELECT OPPONENT BOT</label>
+                <label>> SELECT OPPONENT BOT</label>
                 <select id="bot-level">
                     <option value="none">Practice Alone (Sandbox)</option>
                     <option value="beginner">Beginner Bot [600 ELO]</option>
@@ -107,8 +81,7 @@
         const ACCESS_KEY = "пасворд.шах.отваранја."; 
         const chess = new Chess();
         let selectedSquare = null;
-
-        const openingBook = { "e4": "King's Pawn Opening", "e4 e5": "Open Game" };
+        const openings = { "e4": "King's Pawn Opening", "e4 e5": "Open Game" };
 
         function checkKey() {
             if (document.getElementById("passcode").value === ACCESS_KEY) {
@@ -120,19 +93,14 @@
 
         function showBotMenu() {
             const mode = document.getElementById("game-mode").value;
-            if (mode === "classic") {
-                chess.reset();
-                finalizeMenu();
-            } else if (mode === "all-kings") {
-                setupAllKingsBoard();
-                finalizeMenu();
-            }
+            if (mode === "classic") { chess.reset(); finalizeMenu(); }
+            else if (mode === "all-kings") { setupAllKingsBoard(); finalizeMenu(); }
         }
 
         function finalizeMenu() {
             document.getElementById("variant-menu").style.display = "none";
             document.getElementById("bot-menu").style.display = "block";
-            updatePieces();
+            updateBoardState();
         }
 
         function setupAllKingsBoard() {
@@ -159,11 +127,10 @@
                     boardElement.appendChild(square);
                 }
             }
-            updatePieces();
+            updateBoardState();
         }
 
         function handleSquareClick(sq) {
-            if (chess.game_over()) return;
             if (selectedSquare === null) {
                 if (chess.get(sq) && chess.get(sq).color === chess.turn()) { 
                     selectedSquare = sq; 
@@ -173,11 +140,11 @@
                 document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
                 chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
                 selectedSquare = null;
-                updatePieces();
+                updateBoardState();
             }
         }
 
-        function updatePieces() {
+        function updateBoardState() {
             document.querySelectorAll(".square").forEach(sq => {
                 const existing = sq.querySelectorAll('.piece');
                 existing.forEach(p => p.remove());
@@ -189,7 +156,8 @@
                     sq.appendChild(img);
                 }
             });
-            document.getElementById("move-log").innerText = chess.history().join(" ") || "1. ...";
+            const hist = chess.history().join(" ");
+            document.getElementById("opening-name").innerText = openings[hist] || "Custom Position";
         }
 
         function resetTrainer() { 
@@ -198,8 +166,7 @@
             document.getElementById("game-mode").value = "";
             chess.reset();
             selectedSquare = null; 
-            document.getElementById("opening-name").innerText = "Starting Position";
-            updatePieces();
+            updateBoardState();
         }
     </script>
 </body>
