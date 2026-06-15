@@ -19,8 +19,72 @@
             padding: 10px; 
         }
 
-        /* App container starts visible now */
-        #main-app { display: flex; width: 100%; max-width: 400px; flex-direction: column; gap: 12px; margin-top: 5px; }
+        /* Password Gate Container */
+        #gate-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #1e120c;
+            background-image: url('https://www.transparenttextures.com/patterns/dark-wood.png');
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .gate-box {
+            border: 3px solid #4a2e1b;
+            background-color: #362215;
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+        }
+
+        .gate-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #cca474;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .gate-input {
+            width: 100%;
+            padding: 12px;
+            background-color: #1e120c;
+            color: #ffffff;
+            border: 2px solid #5c3a21;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .gate-input:focus {
+            border-color: #1baca6;
+        }
+
+        #gate-error {
+            color: #fa4141;
+            font-size: 13px;
+            margin-top: -5px;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: bold;
+        }
+
+        /* App container starts hidden */
+        #main-app { display: none; width: 100%; max-width: 400px; flex-direction: column; gap: 12px; margin-top: 5px; }
         #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; border: 10px solid #4a2e1b; box-shadow: 0 8px 25px rgba(0,0,0,0.6); }
         .square { display: flex; justify-content: center; align-items: center; position: relative; width: 100%; }
         .square::before { content: ""; display: block; padding-top: 100%; }
@@ -79,7 +143,17 @@
 </head>
 <body>
 
-    <!-- Main Application Interface (No gate screen above it anymore) -->
+    <!-- Security Access Gate Screen -->
+    <div id="gate-screen">
+        <div class="gate-box">
+            <div class="gate-title">Enter Access Key</div>
+            <input type="password" id="gate-key" class="gate-input" placeholder="••••••••••••" onkeydown="if(event.key === 'Enter') verifyGateAccess()">
+            <div id="gate-error">ACCESS DENIED: INVALID KEY</div>
+            <button class="wood-btn" style="margin-top: 5px;" onclick="verifyGateAccess()">UNLOCK BOARD</button>
+        </div>
+    </div>
+
+    <!-- Main Application Interface -->
     <div id="main-app">
         <div id="chessboard"></div>
 
@@ -171,10 +245,20 @@
             "Nf3": "Reti Opening", "Nf3 d5": "Reti Opening: Standard Setup", "Nf3 d5 c4": "Reti Opening: Reti Gambit"
         };
 
-        // Instantly initialize the board right when the script loads
-        window.onload = function() {
-            resetTrainer();
-        };
+        // Verifies the access key cleanly
+        function verifyGateAccess() {
+            const userInput = document.getElementById("gate-key").value;
+            const correctKey = "pasvord.sah.otvaranja.";
+            
+            if (userInput === correctKey) {
+                document.getElementById("gate-screen").style.display = "none";
+                document.getElementById("main-app").style.display = "flex";
+                resetTrainer();
+            } else {
+                document.getElementById("gate-error").style.display = "block";
+                document.getElementById("gate-key").value = "";
+            }
+        }
 
         function createBoard() {
             const boardElement = document.getElementById("chessboard");
