@@ -19,7 +19,6 @@
             padding: 10px; 
         }
 
-        /* Fully Wooden Lockscreen Gate */
         #gate-screen { 
             display: flex; 
             flex-direction: column; 
@@ -109,7 +108,7 @@
         const chess = new Chess();
         let selectedSquare = null;
 
-        const openingBook = { "e4": "King's Pawn Opening", "e4 e5": "Open Game", "e4 e5 Nf3 Nc6 3. c3": "Ponziani Opening" };
+        const openingBook = { "e4": "King's Pawn Opening", "e4 e5": "Open Game" };
 
         function checkKey() {
             if (document.getElementById("passcode").value === ACCESS_KEY) {
@@ -121,11 +120,19 @@
 
         function showBotMenu() {
             const mode = document.getElementById("game-mode").value;
-            if (mode !== "") {
-                document.getElementById("variant-menu").style.display = "none";
-                document.getElementById("bot-menu").style.display = "block";
-                if (mode === "all-kings") setupAllKingsBoard();
+            if (mode === "classic") {
+                chess.reset();
+                finalizeMenu();
+            } else if (mode === "all-kings") {
+                setupAllKingsBoard();
+                finalizeMenu();
             }
+        }
+
+        function finalizeMenu() {
+            document.getElementById("variant-menu").style.display = "none";
+            document.getElementById("bot-menu").style.display = "block";
+            updatePieces();
         }
 
         function setupAllKingsBoard() {
@@ -137,7 +144,6 @@
                 chess.put({ type: 'k', color: 'w' }, col + '2');
                 chess.put({ type: 'k', color: 'w' }, col + '1');
             }
-            updatePieces();
         }
 
         function createBoard() {
@@ -158,7 +164,6 @@
 
         function handleSquareClick(sq) {
             if (chess.game_over()) return;
-            if (chess.turn() === 'b' && document.getElementById("bot-level").value !== "none") return;
             if (selectedSquare === null) {
                 if (chess.get(sq) && chess.get(sq).color === chess.turn()) { 
                     selectedSquare = sq; 
@@ -166,44 +171,10 @@
                 }
             } else {
                 document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
-                const move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
+                chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
                 selectedSquare = null;
                 updatePieces();
-                if (move) {
-                    if (chess.game_over()) { handleGameOver(); }
-                    else if (document.getElementById("bot-level").value !== "none") {
-                        setTimeout(() => { triggerBotMove(); if (chess.game_over()) handleGameOver(); }, 300);
-                    }
-                }
             }
-        }
-
-        function handleGameOver() {
-            const botMode = document.getElementById("bot-level").value;
-            let message = "GAME OVER: ";
-            if (chess.in_checkmate()) {
-                const winner = chess.turn() === 'w' ? "Black" : "White";
-                if (botMode !== "none") {
-                    message = (winner === "Black") ? `You have been defeated by the ${botMode} Bot!` : `Victory! You have beat the ${botMode} Bot!`;
-                } else {
-                    message = `${winner} has won the game by Checkmate!`;
-                }
-            } else { message = "Game Over: Draw"; }
-            document.getElementById("opening-name").innerText = message;
-        }
-
-        function updateStats() {
-            const historyArray = chess.history();
-            const san = historyArray.join(" ");
-            if (!chess.game_over()) {
-                let currentLine = "Starting Position";
-                if (san !== "") {
-                    currentLine = "Custom Line / Engine Battle";
-                    if (openingBook[san]) currentLine = openingBook[san];
-                }
-                document.getElementById("opening-name").innerText = currentLine;
-            }
-            document.getElementById("move-log").innerText = san || "1. ...";
         }
 
         function updatePieces() {
@@ -218,22 +189,17 @@
                     sq.appendChild(img);
                 }
             });
-            updateStats();
-        }
-
-        function triggerBotMove() {
-            const moves = chess.moves();
-            if (moves.length > 0) { chess.move(moves[Math.floor(Math.random() * moves.length)]); updatePieces(); }
+            document.getElementById("move-log").innerText = chess.history().join(" ") || "1. ...";
         }
 
         function resetTrainer() { 
             document.getElementById("variant-menu").style.display = "block";
             document.getElementById("bot-menu").style.display = "none";
             document.getElementById("game-mode").value = "";
-            chess.reset(); selectedSquare = null; 
+            chess.reset();
+            selectedSquare = null; 
             document.getElementById("opening-name").innerText = "Starting Position";
-            document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
-            createBoard();
+            updatePieces();
         }
     </script>
 </body>
