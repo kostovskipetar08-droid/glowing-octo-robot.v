@@ -52,7 +52,7 @@
         <div id="chessboard"></div>
         <div class="display-panel">
             <div class="status-title">> SYSTEM STATUS</div>
-            <div id="opening-name">Starting Position</div>
+            <div id="opening-name">Two King Setup</div>
             
             <div id="bot-menu">
                 <label>> SELECT OPPONENT BOT</label>
@@ -64,7 +64,7 @@
                 </select>
             </div>
 
-            <button class="wood-btn" onclick="resetTrainer()">RESET CLASSIC BOARD</button>
+            <button class="wood-btn" onclick="resetTrainer()">RESET BOARD</button>
         </div>
     </div>
 
@@ -72,14 +72,20 @@
         const ACCESS_KEY = "пасворд.шах.отваранја."; 
         const chess = new Chess();
         let selectedSquare = null;
-        const openings = { "e4": "King's Pawn Opening", "e4 e5": "Open Game" };
 
         function checkKey() {
             if (document.getElementById("passcode").value === ACCESS_KEY) {
                 document.getElementById("gate-screen").style.display = "none";
                 document.getElementById("main-app").style.display = "flex";
-                createBoard();
+                setupTwoKings();
             } else { alert("ACCESS DENIED"); }
+        }
+
+        function setupTwoKings() {
+            chess.clear();
+            chess.put({ type: 'k', color: 'w' }, 'e1');
+            chess.put({ type: 'k', color: 'b' }, 'e8');
+            createBoard();
         }
 
         function createBoard() {
@@ -106,7 +112,7 @@
                 }
             } else {
                 document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
-                chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
+                chess.move({ from: selectedSquare, to: sq });
                 selectedSquare = null;
                 updateBoardState();
             }
@@ -124,14 +130,11 @@
                     sq.appendChild(img);
                 }
             });
-            const hist = chess.history().join(" ");
-            document.getElementById("opening-name").innerText = openings[hist] || "Classic Chess";
         }
 
         function resetTrainer() { 
-            chess.reset();
+            setupTwoKings();
             selectedSquare = null; 
-            updateBoardState();
         }
     </script>
 </body>
