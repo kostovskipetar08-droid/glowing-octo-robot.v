@@ -163,7 +163,7 @@
 
     <div id="gate-screen">
         <div class="wooden-box">
-            <h3>Password Here/Пасворд Тука</h3>
+            <h3>Password Herе</h3>
             <p style="font-size: 11px; color: #cca474; margin: 10px 0 15px 0;">SECURE INTERFACE</p>
             <input type="password" id="passcode" placeholder="Enter the right password/Внеси го точниот пасворд">
             <div class="toggle-container">
@@ -234,12 +234,12 @@
                     </select>
                 </div>
 
-                <button class="wood-btn" onclick="generateGameAnalysis()">RUN PETKO REVIEW</button>
+                <button class="wood-btn" onclick="generateGameAnalysis()">Coach/Наставник</button>
                 <button class="wood-btn" style="background-color: #3d2516; margin-top: 0;" onclick="resetTrainer()">RESET BOARD</button>
             </div>
 
             <div class="analysis-card" id="analysis-panel">
-                <div class="status-title" style="color: #1baca6;">> COACH DEBRIEF [PETKO - 1500 ELO]</div>
+                <div class="status-title" style="color: #1baca6;">> COACH  [PETKO - 1500 ELO]</div>
                 <div class="coach-feedback-box" id="coach-text">
                     "Анализата е готова кликни на потезите доле и види како отишло."
                 </div>
@@ -565,7 +565,7 @@
 
         function generateGameAnalysis() {
             if (gameMovesTimeline.length === 0) {
-                alert("Play some tactical moves first so I can analyze your game!");
+                alert("Првим играј за да можам да анализирам!");
                 return;
             }
 
