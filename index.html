@@ -165,7 +165,7 @@
         <div class="wooden-box">
             <h3>WOODEN TERMINAL</h3>
             <p style="font-size: 11px; color: #cca474; margin: 10px 0 15px 0;">SECURE INTERFACE</p>
-            <input type="password" id="passcode" placeholder="ENTER ACCESS KEY">
+            <input type="password" id="passcode" placeholder="Password slotq">
             <div class="toggle-container">
                 <input type="checkbox" id="show-pass" onclick="togglePasswordVisibility()">
                 <label for="show-pass">Show Text Characters</label>
@@ -219,18 +219,18 @@
                 <div class="menu-group">
                     <label>> CHOOSE YOUR SIDE</label>
                     <select id="player-color" onchange="resetTrainer()">
-                        <option value="w">Play as White</option>
-                        <option value="b">Play as Black</option>
+                        <option value="w">Играј ко Бели</option>
+                        <option value="b">Играј ко Црни</option>
                     </select>
                 </div>
 
                 <div class="menu-group">
                     <label>> SELECT OPPONENT BOT</label>
                     <select id="bot-level" onchange="handleBotSelectChange()">
-                        <option value="none">Practice Alone (Sandbox)</option>
+                        <option value="none">Practice Alone/Играј сам или со друг</option>
                         <option value="beginner">Beginner Bot [600 ELO]</option>
                         <option value="intermediate">Intermediate Bot [1200 ELO]</option>
-                        <option value="master">Stockfish Master Bot [2800 ELO] 🔥</option>
+                        <option value="master">Grandmaster Stockfish [2800+ ELO] ☠️</option>
                     </select>
                 </div>
 
@@ -625,22 +625,22 @@
 
             if (gameIsOver) {
                 if (chess.in_checkmate()) {
-                    finalResultText = "Checkmate achieved. Game over. ";
+                    finalResultText = "Шахмат. Победивте♟️🥇 ";
                 } else if (chess.in_draw() || chess.in_stalemate()) {
-                    finalResultText = "Draw. Board is completely locked up. ";
+                    finalResultText = "Реми. Секогаш можете да играте пак♟️. ";
                 }
             }
 
             if (playerCounts["Blunder"] > 0) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'You were playing a heavy positional game, but shifting into <strong>' + firstPlayerBlunder + '</strong> was a blunder. It left an opening for the opponent to capture clean material. Watch the squares closely!';
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Играта ти одеше одлично, но ти го даде  <strong>' + firstPlayerBlunder + '</Strong> за бесплатно пази следен пат, но све е добро тоа не е нешто што малце проблеми нема да решат. !';
             } else if (playerCounts["Mistake"] > 2) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Not a bad attempt, but you conceded a bit too much center-board real estate during those trades. At my level (1500 ELO), preserving tactical positions is everything.';
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Имаше многу подобри потези.Јас веруваж дека ти ке ги најдеш следен пат,.';
             } else if (playerCounts["Brilliant"] > 0) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Incredible visibility! Spotting <strong>' + firstPlayerBrilliant + '</strong> was an absolute tactical masterpiece. You broke open the defenses perfectly.';
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Браво за тој преубав брилиантен кај <strong>' + firstPlayerBrilliant + '</strong> Личи кода ке мр стигнеш за кратко.';
             } else if (playerCounts["Book"] > 2) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Highly accurate layout! Your opening system perfectly matches grandmaster book databases. Very clean transition into the middle game fight.';
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Супер отваранјр тоа е отваранје што ми се свиѓа.';
             } else {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Super clean game! You traded with zero major blunders and handled the space nicely. Let\'s setup another match line and keep this streak rolling.';
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Добра игра. Ајде ако сакаш ушедна♟️.';
             }
 
             document.getElementById("coach-text").innerHTML = coachExplanationText;
