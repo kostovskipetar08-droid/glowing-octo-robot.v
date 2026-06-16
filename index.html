@@ -2,107 +2,83 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Dashboard</title>
+    <title>Chess</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            background-color: #2b1d12; 
-            background-image: url('https://www.transparenttextures.com/patterns/dark-wood.png');
-            color: #f5e6cc; 
-            font-family: sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh; 
-            padding: 10px; 
-        }
-        #gate-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: #1e120c; display: flex; align-items: center; justify-content: center; z-index: 100; }
-        .box { 
-            border: 3px solid #4a2e1b; 
-            background-color: #362215; 
-            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
-            padding: 20px; 
-            border-radius: 6px; 
-            width: 340px; 
-            text-align: center; 
-        }
-        #main-app { display: none; width: 100%; max-width: 400px; flex-direction: column; gap: 10px; }
-        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; border: 5px solid #4a2e1b; }
-        .square { width: 100%; padding-top: 100%; position: relative; }
-        .light { background-color: #e6d5bc; }
-        .dark { background-color: #8c5a36; }
-        .piece { position: absolute; top:0; left:0; width:100%; height:100%; cursor: pointer; z-index: 10; }
+        body { background: #2b1d12 url('https://www.transparenttextures.com/patterns/dark-wood.png'); color: #f5e6cc; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+        #gate { position: fixed; top:0; left:0; width:100%; height:100%; background: #1e120c; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .box { border: 3px solid #4a2e1b; background: #362215 url('https://www.transparenttextures.com/patterns/wood-pattern.png'); padding: 20px; border-radius: 6px; width: 300px; text-align: center; }
+        #app { display: none; width: 100%; max-width: 400px; padding: 10px; }
+        #board { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; border: 5px solid #4a2e1b; }
+        .sq { width: 100%; padding-top: 100%; position: relative; }
+        .light { background: #e6d5bc; } .dark { background: #8c5a36; }
+        .p { position: absolute; top:0; left:0; width:100%; height:100%; cursor: pointer; }
         .btn { background: #5c3a21; color: #fff; border: 2px solid #7c5233; padding: 10px; width: 100%; margin-top: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="gate-screen">
+    <div id="gate">
         <div class="box">
-            <input type="password" id="key" placeholder="Enter Access Key" style="width:100%; padding:10px;">
-            <button class="btn" onclick="verify()">UNLOCK</button>
+            <input type="password" id="k" placeholder="Password" style="width:100%; padding:8px;">
+            <button class="btn" onclick="check()">UNLOCK</button>
         </div>
     </div>
 
-    <div id="main-app">
-        <div id="chessboard"></div>
-        <button class="btn" onclick="resetBoard()">RESET BOARD</button>
+    <div id="app">
+        <div id="board"></div>
+        <button class="btn" onclick="reset()">RESET BOARD</button>
     </div>
 
     <script>
-        let game = new Chess();
-        let selected = null;
-        const pieceImages = {
-            'w': {'p': '4/45/Chess_plt45.svg', 'r': '7/72/Chess_rlt45.svg', 'n': '7/70/Chess_nlt45.svg', 'b': 'b/b1/Chess_blt45.svg', 'q': '1/15/Chess_qlt45.svg', 'k': '4/42/Chess_klt45.svg'},
-            'b': {'p': 'c/c7/Chess_pdt45.svg', 'r': 'f/ff/Chess_rdt45.svg', 'n': 'e/ef/Chess_ndt45.svg', 'b': '9/98/Chess_bdt45.svg', 'q': '4/47/Chess_qdt45.svg', 'k': 'f/f0/Chess_kdt45.svg'}
-        };
+        var game = new Chess();
+        var selected = null;
 
-        function verify() {
-            if(document.getElementById('key').value === "pasvord.sah.otvaranja.") {
-                document.getElementById('gate-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'flex';
-                initBoard();
+        function check() {
+            if(document.getElementById('k').value === "pasvord.sah.otvaranja.") {
+                document.getElementById('gate').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                draw();
             }
         }
 
-        function initBoard() {
-            const board = document.getElementById('chessboard');
-            board.innerHTML = '';
-            for(let i=0; i<64; i++) {
-                const sq = document.createElement('div');
-                const row = Math.floor(i/8), col = i%8;
-                sq.className = `square ${(row+col)%2===0 ? 'light' : 'dark'}`;
-                sq.dataset.square = String.fromCharCode(97+col) + (8-row);
-                sq.onclick = () => handleMove(sq.dataset.square);
-                board.appendChild(sq);
+        function draw() {
+            var b = document.getElementById('board');
+            b.innerHTML = '';
+            for(var i=0; i<64; i++) {
+                var s = document.createElement('div');
+                var r = Math.floor(i/8), c = i%8;
+                s.className = 'sq ' + ((r+c)%2===0 ? 'light' : 'dark');
+                s.dataset.s = String.fromCharCode(97+c) + (8-r);
+                s.onclick = function() { move(this.dataset.s); };
+                b.appendChild(s);
             }
-            render();
+            updatePieces();
         }
 
-        function handleMove(sq) {
-            let move = game.move({from: selected || sq, to: sq, promotion: 'q'});
-            if(move) {
+        function move(sq) {
+            if(selected) {
+                game.move({from: selected, to: sq, promotion: 'q'});
                 selected = null;
-                render();
+                updatePieces();
             } else { selected = sq; }
         }
 
-        function resetBoard() {
-            game.reset();
-            render();
-        }
+        function reset() { game.reset(); updatePieces(); }
 
-        function render() {
-            document.querySelectorAll('.square').forEach(sq => {
-                sq.innerHTML = '';
-                let p = game.get(sq.dataset.square);
+        function updatePieces() {
+            document.querySelectorAll('.sq').forEach(s => {
+                s.innerHTML = '';
+                var p = game.get(s.dataset.s);
                 if(p) {
-                    sq.innerHTML = `<img src="https://upload.wikimedia.org/wikipedia/commons/${pieceImages[p.color][p.type]}" class="piece">`;
+                    var img = document.createElement('img');
+                    img.src = 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'.replace('plt', p.type+(p.color==='w'?'l':'d'));
+                    img.className = 'p';
+                    s.appendChild(img);
                 }
             });
         }
     </script>
 </body>
 </html>
+
