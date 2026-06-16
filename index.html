@@ -163,9 +163,9 @@
 
     <div id="gate-screen">
         <div class="wooden-box">
-            <h3>WOODEN TERMINAL</h3>
+            <h3>Password Here/Пасворд Тука</h3>
             <p style="font-size: 11px; color: #cca474; margin: 10px 0 15px 0;">SECURE INTERFACE</p>
-            <input type="password" id="passcode" placeholder="Password slotq">
+            <input type="password" id="passcode" placeholder="Enter the right password/Внеси го точниот пасворд">
             <div class="toggle-container">
                 <input type="checkbox" id="show-pass" onclick="togglePasswordVisibility()">
                 <label for="show-pass">Show Text Characters</label>
@@ -187,11 +187,11 @@
 
             <div class="captured-container">
                 <div class="captured-row">
-                    <span>Captured White:</span>
+                    <span>Captured White/Бели фигури земени:</span>
                     <div id="captured-white" class="captured-pieces"></div>
                 </div>
                 <div class="captured-row">
-                    <span>Captured Black:</span>
+                    <span>Captured Black/Црни фигури земени:</span>
                     <div id="captured-black" class="captured-pieces"></div>
                 </div>
             </div>
@@ -206,18 +206,18 @@
 
                 <div class="settings-drawer" id="settings-panel">
                     <div class="setting-row">
-                        <label for="setting-blindfold">Blindfold Mode (Hide Pieces)</label>
+                        <label for="setting-blindfold">Blindfold Mode/Скриени вигури мод (Hide Pieces)</label>
                         <input type="checkbox" id="setting-blindfold" onchange="applyBlindfoldSetting()">
                     </div>
                 </div>
 
-                <div id="opening-name">Starting Position</div>
+                <div id="opening-name">Starting Position/Почната позиција</div>
                 
-                <div class="status-title">> MOVES RECORDED</div>
+                <div class="status-title">> Played moves/Играни потези</div>
                 <div id="move-log">1. ...</div>
                 
                 <div class="menu-group">
-                    <label>> CHOOSE YOUR SIDE</label>
+                    <label>> Choose you side/Одбериси ја страната</label>
                     <select id="player-color" onchange="resetTrainer()">
                         <option value="w">Играј ко Бели</option>
                         <option value="b">Играј ко Црни</option>
@@ -225,7 +225,7 @@
                 </div>
 
                 <div class="menu-group">
-                    <label>> SELECT OPPONENT BOT</label>
+                    <label>> Select opponent bot/Oдбери Бот</label>
                     <select id="bot-level" onchange="handleBotSelectChange()">
                         <option value="none">Practice Alone/Играј сам или со друг</option>
                         <option value="beginner">Beginner Bot [600 ELO]</option>
@@ -241,10 +241,10 @@
             <div class="analysis-card" id="analysis-panel">
                 <div class="status-title" style="color: #1baca6;">> COACH DEBRIEF [PETKO - 1500 ELO]</div>
                 <div class="coach-feedback-box" id="coach-text">
-                    "Analysis complete. Click on any move down below and let's look at how you played."
+                    "Анализата е готова кликни на потезите доле и види како отишло."
                 </div>
 
-                <div class="status-title">> YOUR PERFORMANCE METRICS</div>
+                <div class="status-title">> Game Stats/Статистики на играта</div>
                 <div class="stat-grid">
                     <div class="stat-item"><span><span class="stat-dot badge-book"></span>Book Openings:</span><strong id="stat-book">0</strong></div>
                     <div class="stat-item"><span><span class="stat-dot badge-brilliant"></span>Brilliant (!!):</span><strong id="stat-brilliant">0</strong></div>
@@ -253,7 +253,7 @@
                     <div class="stat-item"><span><span class="stat-dot badge-blunder"></span>Blunders (??):</span><strong id="stat-blunder">0</strong></div>
                 </div>
                 
-                <div class="status-title">> INTERACTIVE TIMELINE BREAKDOWN</div>
+                <div class="status-title">> Анализа</div>
                 <div class="review-list" id="analysis-move-list"></div>
             </div>
         </div>
