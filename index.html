@@ -150,7 +150,7 @@
                 "Analysis complete. Click on any move down below and let's look at how you played."
             </div>
 
-            <div class="status-title">> PLAYER PERFORMANCE METRICS</div>
+            <div class="status-title">> YOUR PERFORMANCE METRICS</div>
             <div class="stat-grid">
                 <div class="stat-item"><span><span class="stat-dot badge-book"></span>Book Openings:</span><strong id="stat-book">0</strong></div>
                 <div class="stat-item"><span><span class="stat-dot badge-brilliant"></span>Brilliant (!!):</span><strong id="stat-brilliant">0</strong></div>
@@ -285,10 +285,8 @@
             const botDifficulty = document.getElementById("bot-level").value;
             if (botDifficulty === "none") return;
 
-            // 2800 ELO STOCKFISH API TUNING
             if (botDifficulty === "master") {
                 const gameFen = chess.fen();
-                // depth=13 accurately locks calculation into the elite 2800 bracket
                 fetch(`https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(gameFen)}&depth=13`)
                     .then(response => response.json())
                     .then(data => {
@@ -423,6 +421,9 @@
                 return;
             }
 
+            // Grabs the player's color choice right now
+            playerColor = document.getElementById("player-color").value;
+
             let playerCounts = { "Book": 0, "Brilliant": 0, "Good Move": 0, "Mistake": 0, "Blunder": 0 };
             let firstPlayerBlunder = null;
             let firstPlayerBrilliant = null;
@@ -431,6 +432,7 @@
             listContainer.innerHTML = "";
 
             gameMovesTimeline.forEach((moveData, index) => {
+                // FIXED: Explicit checks to confirm if the move color matches your exact color selection
                 let isPlayerMove = (moveData.side === playerColor);
 
                 if (isPlayerMove && playerCounts[moveData.rating.label] !== undefined) {
@@ -475,6 +477,7 @@
                 }
             }
 
+            // Petko now reads only your individual tally
             if (playerCounts["Blunder"] > 0) {
                 coachExplanationText = '💬 Petko says: ' + finalResultText + 'You were playing a heavy positional game, but shifting into <strong>' + firstPlayerBlunder + '</strong> was a blunder. It left an opening for the opponent to capture clean material. Watch the squares closely!';
             } else if (playerCounts["Mistake"] > 2) {
