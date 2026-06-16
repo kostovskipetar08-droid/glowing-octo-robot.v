@@ -28,14 +28,31 @@
 
         .wood-btn { background-color: #5c3a21; color: #f5e6cc; border: 2px solid #7c5233; padding: 12px; margin-top: 15px; font-weight: bold; cursor: pointer; width: 100%; border-radius: 4px; text-shadow: 1px 1px 1px #000; }
 
-        #main-app { display: none; width: 100%; max-width: 400px; flex-direction: column; gap: 12px; margin-top: 5px; }
-        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; border: 10px solid #4a2e1b; box-shadow: 0 8px 25px rgba(0,0,0,0.6); }
+        #main-app { display: none; width: 100%; max-width: 430px; flex-direction: column; gap: 12px; margin-top: 5px; }
+        
+        /* Layout block combining Eval Bar + Chessboard side-by-side */
+        .game-area { display: flex; gap: 8px; width: 100%; }
+        
+        /* Vertical Evaluation Bar */
+        .eval-bar-wrapper { width: 20px; background-color: #3d2516; border: 3px solid #4a2e1b; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #eval-bar-black { width: 100%; height: 50%; background-color: #1e120c; background-image: url('https://www.transparenttextures.com/patterns/dark-wood.png'); transition: height 0.3s ease; }
+        #eval-bar-white { width: 100%; flex-grow: 1; background-color: #e6d5bc; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); transition: height 0.3s ease; }
+
+        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); flex-grow: 1; border: 10px solid #4a2e1b; box-shadow: 0 8px 25px rgba(0,0,0,0.6); }
         .square { display: flex; justify-content: center; align-items: center; position: relative; width: 100%; }
         .square::before { content: ""; display: block; padding-top: 100%; }
         .light-square { background-color: #e6d5bc; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); }
         .dark-square { background-color: #8c5a36; background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); }
+        
+        /* Move Highlights */
         .square.selected { outline: 3px solid #ffcc66; outline-offset: -3px; }
+        .square.last-move-from { outline: 3px dashed #b55d3c; outline-offset: -3px; }
+        .square.last-move-to { outline: 3px solid #ffd700; outline-offset: -3px; }
+        
         .piece { position: absolute; width: 88%; height: 88%; cursor: pointer; z-index: 10; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.5)); }
+        
+        /* Blindfold Mode Hide Style */
+        .blindfold-active .piece { display: none !important; }
 
         .eval-badge {
             position: absolute;
@@ -65,11 +82,21 @@
         .captured-pieces { display: flex; flex-wrap: wrap; gap: 2px; }
         .captured-img { width: 22px; height: 22px; filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5)); }
 
-        .display-panel { border: 3px solid #4a2e1b; background-color: #362215; padding: 15px; border-radius: 6px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 10px; }
+        .display-panel { position: relative; border: 3px solid #4a2e1b; background-color: #362215; padding: 15px; border-radius: 6px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 10px; }
         .status-title { font-size: 13px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #5c3a21; padding-bottom: 3px; color: #cca474; }
         #opening-name { font-size: 17px; font-weight: bold; color: #ffffff; text-shadow: 1px 1px 2px #000; }
         #move-log { font-family: monospace; font-size: 13px; color: #dfcbb5; max-height: 60px; overflow-y: auto; word-wrap: break-word; }
         
+        /* Header Settings Gear Placement */
+        .panel-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #5c3a21; padding-bottom: 3px; }
+        .gear-icon-btn { font-size: 20px; cursor: pointer; user-select: none; transition: transform 0.2s ease; }
+        .gear-icon-btn:hover { transform: rotate(45deg); }
+
+        /* Hidden Settings Drawer Container */
+        .settings-drawer { display: none; background-color: #1e120c; border: 2px solid #5c3a21; border-radius: 4px; padding: 12px; flex-direction: column; gap: 8px; margin-bottom: 5px; }
+        .setting-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: #f5e6cc; }
+        .setting-row input[type="checkbox"] { cursor: pointer; width: 16px; height: 16px; }
+
         .analysis-card { display: none; border: 3px solid #7a583a; background-color: #23150d; padding: 15px; border-radius: 6px; flex-direction: column; gap: 12px; }
         .coach-feedback-box { background: #190e08; border-left: 4px solid #1baca6; padding: 12px; border-radius: 4px; font-size: 13.5px; line-height: 1.5; color: #f0e2cc; font-style: italic; }
         .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 5px; }
@@ -102,7 +129,15 @@
 
     <!-- Main Application Interface -->
     <div id="main-app">
-        <div id="chessboard"></div>
+        
+        <!-- Game Play Area with Eval Bar side-by-side with Board -->
+        <div class="game-area">
+            <div class="eval-bar-wrapper">
+                <div id="eval-bar-black"></div>
+                <div id="eval-bar-white"></div>
+            </div>
+            <div id="chessboard"></div>
+        </div>
 
         <div class="captured-container">
             <div class="captured-row">
@@ -116,7 +151,19 @@
         </div>
 
         <div class="display-panel">
-            <div class="status-title">> SYSTEM STATUS</div>
+            <div class="panel-header-row">
+                <div class="status-title" style="border:none; padding:0;">> SYSTEM STATUS</div>
+                <div class="gear-icon-btn" onclick="toggleSettingsDrawer()">⚙️</div>
+            </div>
+
+            <!-- Settings Menu Drawer triggered by gear -->
+            <div class="settings-drawer" id="settings-panel">
+                <div class="setting-row">
+                    <label for="setting-blindfold">Blindfold Mode (Hide Pieces)</label>
+                    <input type="checkbox" id="setting-blindfold" onchange="applyBlindfoldSetting()">
+                </div>
+            </div>
+
             <div id="opening-name">Starting Position</div>
             
             <div class="status-title">> MOVES RECORDED</div>
@@ -172,6 +219,28 @@
         let playerColor = 'w';
         let lastMoveVisuals = null; 
         let gameMovesTimeline = []; 
+        let lastPlayedMoveCoordinates = null; // Tracks from/to squares for tracking outlines
+
+        // Sound Synthesis Engine (Synthesizes wood sound textures natively)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playWoodSound(isCapture) {
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.type = 'triangle';
+            // Capture sounds are slightly lower pitched and deeper wood impacts
+            osc.frequency.setValueAtTime(isCapture ? 120 : 280, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.08);
+            
+            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.08);
+        }
 
         const pieceImages = {
             'w': { 'p': '4/45/Chess_plt45.svg', 'r': '7/72/Chess_rlt45.svg', 'n': '7/70/Chess_nlt45.svg', 'b': 'b/b1/Chess_blt45.svg', 'q': '1/15/Chess_qlt45.svg', 'k': '4/42/Chess_klt45.svg' },
@@ -218,6 +287,21 @@
             }
         }
 
+        function toggleSettingsDrawer() {
+            const drawer = document.getElementById("settings-panel");
+            drawer.style.display = (drawer.style.display === "flex") ? "none" : "flex";
+        }
+
+        function applyBlindfoldSetting() {
+            const isBlindfoldOn = document.getElementById("setting-blindfold").checked;
+            const board = document.getElementById("chessboard");
+            if (isBlindfoldOn) {
+                board.classList.add("blindfold-active");
+            } else {
+                board.classList.remove("blindfold-active");
+            }
+        }
+
         function createBoard() {
             const boardElement = document.getElementById("chessboard");
             boardElement.innerHTML = "";
@@ -257,12 +341,15 @@
                 let chosenPromotionPiece = 'q'; 
 
                 const activeSide = chess.turn();
+                const originSq = selectedSquare;
                 const move = chess.move({ from: selectedSquare, to: sq, promotion: chosenPromotionPiece });
                 selectedSquare = null;
                 
                 if (move) {
+                    playWoodSound(!!move.captured);
+                    lastPlayedMoveCoordinates = { from: originSq, to: sq };
                     let evaluationRating = determineMoveRating(move, activeSide);
-                    gameMovesTimeline.push({ san: move.san, fen: chess.fen(), rating: evaluationRating, side: activeSide });
+                    gameMovesTimeline.push({ san: move.san, fen: chess.fen(), rating: evaluationRating, side: activeSide, from: originSq, to: sq });
                     updateBoardState();
                     
                     if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); return; }
@@ -299,8 +386,10 @@
                             let finalMoveObj = chess.move({ from: fromSq, to: toSq, promotion: 'q' });
                             
                             if (finalMoveObj) {
+                                playWoodSound(!!finalMoveObj.captured);
+                                lastPlayedMoveCoordinates = { from: fromSq, to: toSq };
                                 let evaluationRating = determineMoveRating(finalMoveObj, activeSide);
-                                gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: activeSide });
+                                gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: activeSide, from: fromSq, to: toSq });
                                 updateBoardState();
                                 if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); }
                             }
@@ -346,8 +435,10 @@
 
             const activeSide = chess.turn();
             let finalMoveObj = chess.move(selectedMove.san);
+            playWoodSound(!!finalMoveObj.captured);
+            lastPlayedMoveCoordinates = { from: selectedMove.from, to: selectedMove.to };
             let evaluationRating = determineMoveRating(finalMoveObj, activeSide);
-            gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: activeSide });
+            gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: activeSide, from: selectedMove.from, to: selectedMove.to });
             updateBoardState();
 
             if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); }
@@ -415,13 +506,27 @@
             return { label: label, css: cssClass };
         }
 
+        function updateRealtimeEvalBar() {
+            let evalScore = evaluatePosition(); 
+            // Normalizing center point layout for 50/50 balance split
+            let whitePercentage = 50 + (evalScore * 0.4); 
+            if (whitePercentage > 95) whitePercentage = 95;
+            if (whitePercentage < 5) whitePercentage = 5;
+
+            document.getElementById("eval-bar-black").style.height = `${100 - whitePercentage}%`;
+            document.getElementById("eval-bar-white").style.height = `${whitePercentage}%`;
+        }
+
         function generateGameAnalysis() {
             if (gameMovesTimeline.length === 0) {
                 alert("Play some tactical moves first so I can analyze your game!");
                 return;
             }
 
-            // Grabs the player's color choice right now
+            // Force turn off blindfold mode for review visibility
+            document.getElementById("setting-blindfold").checked = false;
+            applyBlindfoldSetting();
+
             playerColor = document.getElementById("player-color").value;
 
             let playerCounts = { "Book": 0, "Brilliant": 0, "Good Move": 0, "Mistake": 0, "Blunder": 0 };
@@ -432,7 +537,6 @@
             listContainer.innerHTML = "";
 
             gameMovesTimeline.forEach((moveData, index) => {
-                // FIXED: Explicit checks to confirm if the move color matches your exact color selection
                 let isPlayerMove = (moveData.side === playerColor);
 
                 if (isPlayerMove && playerCounts[moveData.rating.label] !== undefined) {
@@ -454,6 +558,11 @@
                 moveBadge.onclick = () => {
                     chess.load(moveData.fen);
                     lastMoveVisuals = null; 
+                    if (moveData.from && moveData.to) {
+                        lastPlayedMoveCoordinates = { from: moveData.from, to: moveData.to };
+                    } else {
+                        lastPlayedMoveCoordinates = null;
+                    }
                     updateBoardViewOnly();
                 };
                 listContainer.appendChild(moveBadge);
@@ -477,7 +586,6 @@
                 }
             }
 
-            // Petko now reads only your individual tally
             if (playerCounts["Blunder"] > 0) {
                 coachExplanationText = '💬 Petko says: ' + finalResultText + 'You were playing a heavy positional game, but shifting into <strong>' + firstPlayerBlunder + '</strong> was a blunder. It left an opening for the opponent to capture clean material. Watch the squares closely!';
             } else if (playerCounts["Mistake"] > 2) {
@@ -499,6 +607,7 @@
             document.querySelectorAll(".square").forEach(sq => {
                 sq.querySelectorAll('.piece').forEach(p => p.remove());
                 sq.querySelectorAll('.eval-badge').forEach(b => b.remove());
+                sq.classList.remove("last-move-from", "last-move-to");
                 
                 const piece = chess.get(sq.dataset.square);
                 if (piece) {
@@ -507,13 +616,18 @@
                     img.classList.add("piece");
                     sq.appendChild(img);
                 }
+
+                if (lastPlayedMoveCoordinates) {
+                    if (sq.dataset.square === lastPlayedMoveCoordinates.from) sq.classList.add("last-move-from");
+                    if (sq.dataset.square === lastPlayedMoveCoordinates.to) sq.classList.add("last-move-to");
+                }
             });
             calculateCapturedPieces();
-            checkBoardState();
+            updateRealtimeEvalBar();
         }
 
         function evaluatePosition() {
-            const values = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
+            const values = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 0 };
             let totalEvaluation = 0;
             for (let row = 0; row < 8; row++) {
                 for (let col = 0; col < 8; col++) {
@@ -525,27 +639,11 @@
             return totalEvaluation;
         }
 
-        function checkBoardState() {
-            let matches = true;
-            document.querySelectorAll(".square").forEach(sq => {
-                const squareName = sq.dataset.square;
-                const enginePiece = chess.get(squareName);
-                const visualPieceImg = sq.querySelector(".piece");
-
-                if (enginePiece && !visualPieceImg) {
-                    matches = false;
-                } else if (!enginePiece && visualPieceImg) {
-                    visualPieceImg.remove();
-                    matches = false;
-                }
-            });
-            return matches;
-        }
-
         function updateBoardState() {
             document.querySelectorAll(".square").forEach(sq => {
                 sq.querySelectorAll('.piece').forEach(p => p.remove());
                 sq.querySelectorAll('.eval-badge').forEach(b => b.remove());
+                sq.classList.remove("last-move-from", "last-move-to");
                 
                 const piece = chess.get(sq.dataset.square);
                 if (piece) {
@@ -561,10 +659,15 @@
                     badge.innerText = lastMoveVisuals.symbol;
                     sq.appendChild(badge);
                 }
+
+                if (lastPlayedMoveCoordinates) {
+                    if (sq.dataset.square === lastPlayedMoveCoordinates.from) sq.classList.add("last-move-from");
+                    if (sq.dataset.square === lastPlayedMoveCoordinates.to) sq.classList.add("last-move-to");
+                }
             });
 
             calculateCapturedPieces();
-            checkBoardState();
+            updateRealtimeEvalBar();
 
             const history = chess.history();
             const historyStr = history.join(" ").trim();
@@ -627,7 +730,10 @@
             selectedSquare = null; 
             lastMoveVisuals = null; 
             gameMovesTimeline = []; 
+            lastPlayedMoveCoordinates = null;
             document.getElementById("analysis-panel").style.display = "none";
+            document.getElementById("settings-panel").style.display = "none";
+            document.getElementById("setting-blindfold").checked = false;
             createBoard();
             
             if (document.getElementById("player-color").value === 'b' && document.getElementById("bot-level").value !== "none") {
