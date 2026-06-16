@@ -132,11 +132,11 @@
 
             <div class="menu-group">
                 <label>> SELECT OPPONENT BOT</label>
-                <select id="bot-level">
+                <select id="bot-level" onchange="handleBotSelectChange()">
                     <option value="none">Practice Alone (Sandbox)</option>
                     <option value="beginner">Beginner Bot [600 ELO]</option>
                     <option value="intermediate">Intermediate Bot [1200 ELO]</option>
-                    <option value="advanced">Advanced Bot [2100 ELO]</option>
+                    <option value="master">Stockfish Master Bot [2800 ELO] 🔥</option>
                 </select>
             </div>
 
@@ -254,7 +254,7 @@
                 document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
                 
                 const movingPiece = chess.get(selectedSquare);
-                let chosenPromotionPiece = 'q'; // Static Auto-Queen Override!
+                let chosenPromotionPiece = 'q'; 
 
                 const activeSide = chess.turn();
                 const move = chess.move({ from: selectedSquare, to: sq, promotion: chosenPromotionPiece });
@@ -274,7 +274,51 @@
             }
         }
 
+        function handleBotSelectChange() {
+            if (chess.turn() !== playerColor && document.getElementById("bot-level").value !== "none") {
+                makeBotMove();
+            }
+        }
+
         function makeBotMove() {
+            if (chess.game_over()) return;
+            const botDifficulty = document.getElementById("bot-level").value;
+            if (botDifficulty === "none") return;
+
+            // 2800 ELO STOCKFISH API TUNING
+            if (botDifficulty === "master") {
+                const gameFen = chess.fen();
+                // depth=13 accurately locks calculation into the elite 2800 bracket
+                fetch(`https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(gameFen)}&depth=13`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.success && data.bestmove) {
+                            const bestMoveStr = data.bestmove.split(' ')[1];
+                            const fromSq = bestMoveStr.substring(0, 2);
+                            const toSq = bestMoveStr.substring(2, 4);
+                            
+                            const activeSide = chess.turn();
+                            let finalMoveObj = chess.move({ from: fromSq, to: toSq, promotion: 'q' });
+                            
+                            if (finalMoveObj) {
+                                let evaluationRating = determineMoveRating(finalMoveObj, activeSide);
+                                gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: activeSide });
+                                updateBoardState();
+                                if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); }
+                            }
+                        } else {
+                            fallbackLocalMove();
+                        }
+                    })
+                    .catch(() => {
+                        fallbackLocalMove();
+                    });
+            } else {
+                fallbackLocalMove();
+            }
+        }
+
+        function fallbackLocalMove() {
             const moves = chess.moves({ verbose: true });
             if (moves.length === 0) return;
 
@@ -283,19 +327,15 @@
 
             if (botDifficulty === "beginner") {
                 selectedMove = moves[Math.floor(Math.random() * moves.length)];
-            } else {
+            } else { 
                 let bestMove = null;
                 let bestValue = (chess.turn() === 'w') ? -9999 : 9999;
                 const shuffledMoves = moves.sort(() => 0.5 - Math.random());
 
                 for (let m of shuffledMoves) {
-                    let moveObj = chess.move(m.san);
+                    chess.move(m.san);
                     let score = evaluatePosition();
                     chess.undo();
-
-                    if (botDifficulty === "advanced" && moveObj.san.includes("#")) {
-                        score = (chess.turn() === 'w') ? score + 5000 : score - 5000;
-                    }
 
                     if (chess.turn() === 'w') { 
                         if (score > bestValue) { bestValue = score; bestMove = m; }
@@ -343,7 +383,6 @@
 
             const pieceValues = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
             
-            // Fix 1: If it's a piece trade where you capture something equal or more valuable, it's a good move!
             if (move.captured) {
                 let movingPieceType = move.piece;
                 if (pieceValues[move.captured] >= pieceValues[movingPieceType] - 10) {
@@ -384,7 +423,6 @@
                 return;
             }
 
-            // Fix 2: Keep player and bot counts strictly separated
             let playerCounts = { "Book": 0, "Brilliant": 0, "Good Move": 0, "Mistake": 0, "Blunder": 0 };
             let firstPlayerBlunder = null;
             let firstPlayerBrilliant = null;
@@ -406,7 +444,6 @@
                 let moveNum = Math.floor(index / 2) + 1;
                 let prefix = (index % 2 === 0) ? `${moveNum}.` : `${moveNum}...`;
                 
-                // Colors layout line: distinguishes your moves from bot's moves on timeline
                 let displayStyle = isPlayerMove ? "border: 1px solid #1baca6;" : "opacity: 0.75;";
                 moveBadge.setAttribute("style", displayStyle);
 
@@ -438,7 +475,6 @@
                 }
             }
 
-            // Coach text fix: completely removed "might just take that" line entirely
             if (playerCounts["Blunder"] > 0) {
                 coachExplanationText = '💬 Petko says: ' + finalResultText + 'You were playing a heavy positional game, but shifting into <strong>' + firstPlayerBlunder + '</strong> was a blunder. It left an opening for the opponent to capture clean material. Watch the squares closely!';
             } else if (playerCounts["Mistake"] > 2) {
