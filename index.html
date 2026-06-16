@@ -2,37 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <style>
-        body { background: #2b1d12 url('https://www.transparenttextures.com/patterns/dark-wood.png'); color: #f5e6cc; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+        body { margin: 0; background: #2b1d12 url('https://www.transparenttextures.com/patterns/dark-wood.png'); color: #f5e6cc; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         #gate { position: fixed; top:0; left:0; width:100%; height:100%; background: #1e120c; display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .box { border: 3px solid #4a2e1b; background: #362215 url('https://www.transparenttextures.com/patterns/wood-pattern.png'); padding: 20px; border-radius: 6px; width: 300px; text-align: center; }
-        #app { display: none; width: 100%; max-width: 400px; padding: 10px; }
+        .box { border: 3px solid #4a2e1b; background: #362215 url('https://www.transparenttextures.com/patterns/wood-pattern.png'); padding: 20px; border-radius: 6px; width: 90%; max-width: 320px; text-align: center; }
+        #app { display: none; width: 95%; max-width: 400px; padding: 10px; }
         #board { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; border: 5px solid #4a2e1b; }
         .sq { width: 100%; padding-top: 100%; position: relative; }
         .light { background: #e6d5bc; } .dark { background: #8c5a36; }
-        .p { position: absolute; top:0; left:0; width:100%; height:100%; cursor: pointer; }
-        .btn { background: #5c3a21; color: #fff; border: 2px solid #7c5233; padding: 10px; width: 100%; margin-top: 10px; cursor: pointer; }
+        .p { position: absolute; top:0; left:0; width:100%; height:100%; cursor: pointer; z-index: 10; }
+        .btn { background: #5c3a21; color: #fff; border: 2px solid #7c5233; padding: 12px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        #status { background: #362215; padding: 10px; margin-top: 10px; text-align: center; border: 2px solid #4a2e1b; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="gate">
         <div class="box">
-            <input type="password" id="k" placeholder="Password" style="width:100%; padding:8px;">
-            <button class="btn" onclick="check()">UNLOCK</button>
+            <input type="password" id="k" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px;">
+            <button class="btn" onclick="check()">UNLOCK BOARD</button>
         </div>
     </div>
 
     <div id="app">
+        <div id="status">Starting Position</div>
         <div id="board"></div>
-        <button class="btn" onclick="reset()">RESET BOARD</button>
+        <button class="btn" onclick="runCoach()">ASK PETKO</button>
+        <div id="coach" style="display:none; background:#190e08; padding:10px; border-left:4px solid #1baca6; margin-top:10px;"></div>
     </div>
 
     <script>
         var game = new Chess();
-        var selected = null;
+        var sel = null;
+        const openings = {"e4": "King's Pawn", "d4": "Queen's Pawn", "e4 e5": "Open Game"};
 
         function check() {
             if(document.getElementById('k').value === "pasvord.sah.otvaranja.") {
@@ -53,20 +58,15 @@
                 s.onclick = function() { move(this.dataset.s); };
                 b.appendChild(s);
             }
-            updatePieces();
+            update();
         }
 
         function move(sq) {
-            if(selected) {
-                game.move({from: selected, to: sq, promotion: 'q'});
-                selected = null;
-                updatePieces();
-            } else { selected = sq; }
+            var m = game.move({from: sel || sq, to: sq, promotion: 'q'});
+            if(m) { sel = null; update(); } else { sel = sq; }
         }
 
-        function reset() { game.reset(); updatePieces(); }
-
-        function updatePieces() {
+        function update() {
             document.querySelectorAll('.sq').forEach(s => {
                 s.innerHTML = '';
                 var p = game.get(s.dataset.s);
@@ -77,8 +77,14 @@
                     s.appendChild(img);
                 }
             });
+            var h = game.history().join(" ");
+            document.getElementById('status').innerText = openings[h] || "Analysis Active";
+        }
+
+        function runCoach() {
+            document.getElementById('coach').style.display = 'block';
+            document.getElementById('coach').innerText = "Petko: Everything looks standard. Keep developing your pieces!";
         }
     </script>
 </body>
 </html>
-
