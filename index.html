@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -87,6 +86,7 @@
 </head>
 <body>
 
+    <!-- Access Gateway Screen -->
     <div id="gate-screen">
         <div class="wooden-box">
             <h3>WOODEN TERMINAL</h3>
@@ -100,6 +100,7 @@
         </div>
     </div>
 
+    <!-- Main Application Interface -->
     <div id="main-app">
         <div id="chessboard"></div>
 
@@ -164,6 +165,7 @@
     </div>
 
     <script>
+        // The exact verification key string
         const ACCESS_KEY = "pasvord.sah.otvaranja."; 
 
         let chess = new Chess();
@@ -225,7 +227,9 @@
         }
 
         function checkKey() {
+            // .trim() safely removes extra accidental leading/trailing spaces
             const inputField = document.getElementById("passcode").value.trim();
+
             if (inputField === ACCESS_KEY) {
                 document.getElementById("gate-screen").style.display = "none";
                 document.getElementById("main-app").style.display = "flex";
@@ -260,5 +264,348 @@
 
         function handleSquareClick(sq) {
             if (chess.game_over()) return;
-            if (document.getElementById("bot-level").value !== "
+            if (document.getElementById("bot-level").value !== "none" && chess.turn() !== playerColor) return;
+
+            if (selectedSquare === null) {
+                if (chess.get(sq) && chess.get(sq).color === chess.turn()) { 
+                    selectedSquare = sq; 
+                    document.querySelector(`[data-square="${sq}"]`).classList.add("selected");
+                }
+            } else {
+                document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
+                
+                const move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
+                selectedSquare = null;
+                
+                if (move) {
+                    let evaluationRating = determineMoveRating(move);
+                    gameMovesTimeline.push({ san: move.san, fen: chess.fen(), rating: evaluationRating, side: playerColor });
+                    updateBoardState();
+                    
+                    if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); return; }
+
+                    if (document.getElementById("bot-level").value !== "none") {
+                        setTimeout(makeBotMove, 400);
+                    }
+                }
+            }
+        }
+
+        function makeBotMove() {
+            const moves = chess.moves({ verbose: true });
+            if (moves.length === 0) return;
+
+            const botDifficulty = document.getElementById("bot-level").value;
+            let selectedMove;
+
+            if (botDifficulty === "beginner") {
+                selectedMove = moves[Math.floor(Math.random() * moves.length)];
+            } else {
+                let bestMove = null;
+                let bestValue = (chess.turn() === 'w') ? -9999 : 9999;
+                const shuffledMoves = moves.sort(() => 0.5 - Math.random());
+
+                for (let m of shuffledMoves) {
+                    let moveObj = chess.move(m.san);
+                    let score = evaluatePosition();
+                    chess.undo();
+
+                    if (botDifficulty === "advanced" && moveObj.san.includes("#")) {
+                        score = (chess.turn() === 'w') ? score + 5000 : score - 5000;
+                    }
+
+                    if (chess.turn() === 'w') { 
+                        if (score > bestValue) { bestValue = score; bestMove = m; }
+                    } else { 
+                        if (score < bestValue) { bestValue = score; bestMove = m; }
+                    }
+                }
+                selectedMove = bestMove || moves[0];
+            }
+
+            let finalMoveObj = chess.move(selectedMove.san);
+            let evaluationRating = determineMoveRating(finalMoveObj);
+            gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: (playerColor === 'w' ? 'b' : 'w') });
+            updateBoardState();
+
+            if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); }
+        }
+
+        function determineMoveRating(move) {
+            const currentHistoryArr = chess.history();
+            const currentHistoryStr = currentHistoryArr.join(" ").trim();
+            
+            let isBook = false;
+            if (openings[currentHistoryStr]) {
+                isBook = true;
+            } else {
+                for (let key in openings) {
+                    if (key.startsWith(currentHistoryStr + " ") || key === currentHistoryStr) { 
+                        isBook = true; 
+                        break; 
+                    }
+                }
+            }
+
+            if (isBook) {
+                lastMoveVisuals = { targetSquare: move.to, symbol: "Book", cssClass: "badge-book" };
+                return { label: "Book", css: "badge-book" };
+            }
+
+            if (move.san.includes("#")) {
+                lastMoveVisuals = { targetSquare: move.to, symbol: "!!", cssClass: "badge-brilliant" };
+                return { label: "Brilliant", css: "badge-brilliant" };
+            }
+
+            const pieceValues = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
+            let currentScore = evaluatePosition();
+            let hungPieceValue = 0;
+            let opponentReplies = chess.moves({ verbose: true });
+            
+            for (let reply of opponentReplies) {
+                if (reply.captured) {
+                    let targetValue = pieceValues[reply.captured];
+                    if (targetValue > hungPieceValue) { hungPieceValue = targetValue; }
+                }
+            }
+
+            let symbol = "!";
+            let label = "Good Move";
+            let cssClass = "badge-good";
+
+            if (hungPieceValue >= 30) {
+                if ((chess.turn() === 'b' && currentScore > 40) || (chess.turn() === 'w' && currentScore < -40)) {
+                    symbol = "!!"; label = "Brilliant"; cssClass = "badge-brilliant";
+                } else {
+                    if (hungPieceValue >= 50) {
+                        symbol = "??"; label = "Blunder"; cssClass = "badge-blunder";
+                    } else {
+                        symbol = "?"; label = "Mistake"; cssClass = "badge-bad";
+                    }
+                }
+            } else if (move.captured) {
+                symbol = "!"; label = "Good Move"; cssClass = "badge-good";
+            } else {
+                symbol = "!"; label = "Good Move"; cssClass = "badge-good";
+            }
+
+            lastMoveVisuals = { targetSquare: move.to, symbol: symbol, cssClass: cssClass };
+            return { label: label, css: cssClass };
+        }
+
+        function generateGameAnalysis() {
+            if (gameMovesTimeline.length === 0) {
+                alert("Play some tactical moves first so I can analyze your game!");
+                return;
+            }
+
+            let counts = { "Book": 0, "Brilliant": 0, "Good Move": 0, "Mistake": 0, "Blunder": 0 };
+            let firstBlunderMove = null;
+            let firstBrilliantMove = null;
+            
+            const listContainer = document.getElementById("analysis-move-list");
+            listContainer.innerHTML = "";
+
+            gameMovesTimeline.forEach((moveData, index) => {
+                if (counts[moveData.rating.label] !== undefined) {
+                    counts[moveData.rating.label]++;
+                }
+
+                if (moveData.rating.label === "Blunder" && !firstBlunderMove) firstBlunderMove = moveData.san;
+                if (moveData.rating.label === "Brilliant" && !firstBrilliantMove) firstBrilliantMove = moveData.san;
+
+                const moveBadge = document.createElement("span");
+                moveBadge.classList.add("review-move");
+                let moveNum = Math.floor(index / 2) + 1;
+                let prefix = (index % 2 === 0) ? `${moveNum}.` : `${moveNum}...`;
+                
+                moveBadge.innerHTML = `${prefix} <strong>${moveData.san}</strong> <span class="stat-dot ${moveData.rating.css}" style="margin:0;"></span>`;
+                
+                moveBadge.onclick = () => {
+                    chess.load(moveData.fen);
+                    lastMoveVisuals = null; 
+                    updateBoardViewOnly();
+                };
+                listContainer.appendChild(moveBadge);
+            });
+
+            document.getElementById("stat-book").innerText = counts["Book"];
+            document.getElementById("stat-brilliant").innerText = counts["Brilliant"];
+            document.getElementById("stat-good").innerText = counts["Good Move"];
+            document.getElementById("stat-bad").innerText = counts["Mistake"];
+            document.getElementById("stat-blunder").innerText = counts["Blunder"];
+
+            let coachExplanationText = "";
+            let gameIsOver = chess.game_over();
+            let finalResultText = "";
+
+            if (gameIsOver) {
+                if (chess.in_checkmate()) {
+                    finalResultText = "Aaand that's checkmate. Game over. ";
+                } else if (chess.in_draw() || chess.in_stalemate()) {
+                    finalResultText = "Draw. Board is completely locked up. ";
+                }
+            }
+
+            if (counts["Blunder"] > 0) {
+                coachExplanationText = '💬 You: "might just take that"<br><br>💬 Petko says: ' + finalResultText + 'You were hanging in there, but playing <strong>' + firstBlunderMove + '</strong> was a massive blunder. You completely gave away a piece for free! Keep your eyes open next time.';
+            } else if (counts["Mistake"] > 2) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Not a bad attempt, but you made a few critical mistakes. At my level (1500 ELO), players will punish you instantly for giving up control of the center like that.';
+            } else if (counts["Brilliant"] > 0) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Wow, okay! Playing <strong>' + firstBrilliantMove + '</strong> was actually a brilliant find. You created an amazing tactical attack out of nowhere. I\'m impressed!';
+            } else if (counts["Book"] > 2) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Solid opening! Your early moves perfectly followed established book theory. You did a great job securing your king before starting the mid-game fight.';
+            } else {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'A clean game. You didn\'t make any catastrophic errors or blunders. Let\'s start another match and see if you can find some faster attacking lines!';
+            }
+
+            document.getElementById("coach-text").innerHTML = coachExplanationText;
+            document.getElementById("analysis-panel").style.display = "flex";
+            document.getElementById("analysis-panel").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateBoardViewOnly() {
+            document.querySelectorAll(".square").forEach(sq => {
+                sq.querySelectorAll('.piece').forEach(p => p.remove());
+                sq.querySelectorAll('.eval-badge').forEach(b => b.remove());
+                
+                const piece = chess.get(sq.dataset.square);
+                if (piece) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages[piece.color][piece.type]}`;
+                    img.classList.add("piece");
+                    sq.appendChild(img);
+                }
+            });
+            calculateCapturedPieces();
+            checkBoardState();
+        }
+
+        function evaluatePosition() {
+            const values = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
+            let totalEvaluation = 0;
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    let sq = String.fromCharCode(97 + col) + (8 - row);
+                    let p = chess.get(sq);
+                    if (p) { totalEvaluation += (p.color === 'w') ? values[p.type] : -values[p.type]; }
+                }
+            }
+            return totalEvaluation;
+        }
+
+        function checkBoardState() {
+            let matches = true;
+            document.querySelectorAll(".square").forEach(sq => {
+                const squareName = sq.dataset.square;
+                const enginePiece = chess.get(squareName);
+                const visualPieceImg = sq.querySelector(".piece");
+
+                if (enginePiece && !visualPieceImg) {
+                    console.warn(`Validation Error: Piece missing visually on ${squareName}. Re-syncing.`);
+                    matches = false;
+                } else if (!enginePiece && visualPieceImg) {
+                    console.warn(`Validation Error: Ghost piece found visually on ${squareName}. Removing.`);
+                    visualPieceImg.remove();
+                    matches = false;
+                }
+            });
+            return matches;
+        }
+
+        function updateBoardState() {
+            document.querySelectorAll(".square").forEach(sq => {
+                sq.querySelectorAll('.piece').forEach(p => p.remove());
+                sq.querySelectorAll('.eval-badge').forEach(b => b.remove());
+                
+                const piece = chess.get(sq.dataset.square);
+                if (piece) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages[piece.color][piece.type]}`;
+                    img.classList.add("piece");
+                    sq.appendChild(img);
+                }
+
+                if (lastMoveVisuals && lastMoveVisuals.targetSquare === sq.dataset.square) {
+                    const badge = document.createElement("div");
+                    badge.classList.add("eval-badge", lastMoveVisuals.cssClass);
+                    badge.innerText = lastMoveVisuals.symbol;
+                    sq.appendChild(badge);
+                }
+            });
+
+            calculateCapturedPieces();
+            checkBoardState();
+
+            const history = chess.history();
+            const historyStr = history.join(" ").trim();
+            let detectedOpening = "Classic Chess Sandbox";
+            
+            if (openings[historyStr]) {
+                detectedOpening = openings[historyStr];
+            } else {
+                for (let key in openings) {
+                    if (historyStr.startsWith(key)) detectedOpening = openings[key] + " ...";
+                }
+            }
+            if(history.length === 0) detectedOpening = "Starting Position";
+            document.getElementById("opening-name").innerText = detectedOpening;
+            document.getElementById("move-log").innerText = historyStr || "1. ...";
+        }
+
+        function calculateCapturedPieces() {
+            const startingCounts = { 'p': 8, 'n': 2, 'b': 2, 'r': 2, 'q': 1 };
+            const currentCounts = {
+                'w': { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 },
+                'b': { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 }
+            };
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    let sq = String.fromCharCode(97 + col) + (8 - row);
+                    let p = chess.get(sq);
+                    if (p && p.type !== 'k') { currentCounts[p.color][p.type]++; }
+                }
+            }
+
+            const whiteTray = document.getElementById("captured-white");
+            whiteTray.innerHTML = "";
+            for (let type in startingCounts) {
+                let missing = startingCounts[type] - currentCounts['w'][type];
+                for(let i = 0; i < missing; i++) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages['w'][type]}`;
+                    img.classList.add("captured-img");
+                    whiteTray.appendChild(img);
+                }
+            }
+
+            const blackTray = document.getElementById("captured-black");
+            blackTray.innerHTML = "";
+            for (let type in startingCounts) {
+                let missing = startingCounts[type] - currentCounts['b'][type];
+                for(let i = 0; i < missing; i++) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages['b'][type]}`;
+                    img.classList.add("captured-img");
+                    blackTray.appendChild(img);
+                }
+            }
+        }
+
+        function resetTrainer() { 
+            chess.reset();
+            selectedSquare = null; 
+            lastMoveVisuals = null; 
+            gameMovesTimeline = []; 
+            document.getElementById("analysis-panel").style.display = "none";
+            createBoard();
+            
+            if (document.getElementById("player-color").value === 'b' && document.getElementById("bot-level").value !== "none") {
+                setTimeout(makeBotMove, 500);
+            }
+        }
+    </script>
+</body>
+</html>
 
