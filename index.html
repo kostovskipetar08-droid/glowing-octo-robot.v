@@ -15,11 +15,8 @@
         .square { width: 100%; padding-top: 100%; position: relative; }
         .light { background-color: #e6d5bc; }
         .dark { background-color: #8c5a36; }
-        .piece { position: absolute; top:0; left:0; width:100%; height:100%; cursor: pointer; }
+        .piece { position: absolute; top:0; left:0; width:100%; height:100%; cursor: pointer; z-index: 10; }
         .btn { background: #5c3a21; color: #fff; border: 2px solid #7c5233; padding: 10px; width: 100%; margin-top: 10px; cursor: pointer; }
-        .eval-badge { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; }
-        .blunder { background: #fa4141; }
-        .good { background: #81b64c; }
         .feedback { background: #190e08; padding: 10px; border-left: 4px solid #1baca6; margin-top: 10px; font-style: italic; }
     </style>
 </head>
@@ -37,7 +34,6 @@
         <select id="bot-level" class="btn">
             <option value="none">Practice Alone</option>
             <option value="beginner">Beginner Bot</option>
-            <option value="intermediate">Intermediate Bot</option>
         </select>
         <button class="btn" onclick="runReview()">RUN PETKO REVIEW</button>
         <div id="analysis-panel" class="box" style="display:none;">
@@ -47,7 +43,12 @@
 
     <script>
         let game = new Chess();
+        let selected = null;
         let timeline = [];
+        const pieceImages = {
+            'w': {'p': '4/45/Chess_plt45.svg', 'r': '7/72/Chess_rlt45.svg', 'n': '7/70/Chess_nlt45.svg', 'b': 'b/b1/Chess_blt45.svg', 'q': '1/15/Chess_qlt45.svg', 'k': '4/42/Chess_klt45.svg'},
+            'b': {'p': 'c/c7/Chess_pdt45.svg', 'r': 'f/ff/Chess_rdt45.svg', 'n': 'e/ef/Chess_ndt45.svg', 'b': '9/98/Chess_bdt45.svg', 'q': '4/47/Chess_qdt45.svg', 'k': 'f/f0/Chess_kdt45.svg'}
+        };
 
         function verify() {
             if(document.getElementById('key').value === "pasvord.sah.otvaranja.") {
@@ -62,8 +63,7 @@
             board.innerHTML = '';
             for(let i=0; i<64; i++) {
                 const sq = document.createElement('div');
-                const row = Math.floor(i/8);
-                const col = i%8;
+                const row = Math.floor(i/8), col = i%8;
                 sq.className = `square ${(row+col)%2===0 ? 'light' : 'dark'}`;
                 sq.dataset.square = String.fromCharCode(97+col) + (8-row);
                 sq.onclick = () => handleMove(sq.dataset.square);
@@ -76,33 +76,24 @@
             let move = game.move({from: selected || sq, to: sq, promotion: 'q'});
             if(move) {
                 timeline.push({san: move.san, side: game.turn() === 'w' ? 'black' : 'white'});
+                selected = null;
                 render();
-                if(document.getElementById('bot-level').value !== 'none') setTimeout(botMove, 500);
             } else { selected = sq; }
-        }
-        let selected = null;
-
-        function botMove() {
-            let moves = game.moves({verbose: true});
-            let m = moves[Math.floor(Math.random() * moves.length)];
-            game.move(m.san);
-            timeline.push({san: m.san, side: game.turn() === 'w' ? 'black' : 'white'});
-            render();
         }
 
         function render() {
             document.querySelectorAll('.square').forEach(sq => {
                 sq.innerHTML = '';
                 let p = game.get(sq.dataset.square);
-                if(p) sq.innerHTML = `<img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg" class="piece">`.replace('plt', p.type + (p.color==='w'?'l':'d'));
+                if(p) {
+                    sq.innerHTML = `<img src="https://upload.wikimedia.org/wikipedia/commons/${pieceImages[p.color][p.type]}" class="piece">`;
+                }
             });
         }
 
         function runReview() {
-            let blunders = timeline.filter(m => Math.random() > 0.8);
             document.getElementById('analysis-panel').style.display = 'block';
-            let msg = blunders.length > 0 ? `Petko says: Your ${blunders[0].side} pieces made a blunder at ${blunders[0].san}!` : "Petko says: Solid play!";
-            document.getElementById('coach-text').innerText = msg;
+            document.getElementById('coach-text').innerText = "Petko says: Keep practicing those openings!";
         }
     </script>
 </body>
