@@ -68,5 +68,529 @@
         
         .analysis-card { display: none; border: 3px solid #7a583a; background-color: #23150d; padding: 15px; border-radius: 6px; flex-direction: column; gap: 12px; }
         .coach-feedback-box { background: #190e08; border-left: 4px solid #1baca6; padding: 12px; border-radius: 4px; font-size: 13.5px; line-height: 1.5; color: #f0e2cc; font-style: italic; }
-        .stat-grid { display: grid; grid-template-columns: repeat(
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 5px; }
+        .stat-item { background: #362215; padding: 8px; border-radius: 4px; border: 1px solid #4a2e1b; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+        .stat-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .review-list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 100px; overflow-y: auto; background: #1e120c; padding: 8px; border-radius: 4px; font-family: monospace; }
+        .review-move { padding: 3px 6px; border-radius: 3px; cursor: pointer; background: #3d2516; color: #dfcbb5; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+        .review-move:hover { background: #5c3a21; color: #fff; }
 
+        .menu-group { display: flex; flex-direction: column; gap: 4px; }
+        label { font-size: 12px; color: #cca474; font-weight: bold; }
+        select { width: 100%; padding: 8px; background-color: #1e120c; color: #f5e6cc; border: 2px solid #5c3a21; border-radius: 4px; outline: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Access Gateway Screen -->
+    <div id="gate-screen">
+        <div class="wooden-box">
+            <h3>WOODEN TERMINAL</h3>
+            <p style="font-size: 11px; color: #cca474; margin: 10px 0 15px 0;">SECURE INTERFACE</p>
+            <input type="password" id="passcode" placeholder="ENTER ACCESS KEY">
+            <button class="wood-btn" onclick="checkKey()">INITIALIZE</button>
+        </div>
+    </div>
+
+    <!-- Main Application Interface -->
+    <div id="main-app">
+        <div id="chessboard"></div>
+
+        <div class="captured-container">
+            <div class="captured-row">
+                <span>Captured White:</span>
+                <div id="captured-white" class="captured-pieces"></div>
+            </div>
+            <div class="captured-row">
+                <span>Captured Black:</span>
+                <div id="captured-black" class="captured-pieces"></div>
+            </div>
+        </div>
+
+        <div class="display-panel">
+            <div class="status-title">> SYSTEM STATUS</div>
+            <div id="opening-name">Starting Position</div>
+            
+            <div class="status-title">> MOVES RECORDED</div>
+            <div id="move-log">1. ...</div>
+            
+            <div class="menu-group">
+                <label>> CHOOSE YOUR SIDE</label>
+                <select id="player-color" onchange="resetTrainer()">
+                    <option value="w">Play as White</option>
+                    <option value="b">Play as Black</option>
+                </select>
+            </div>
+
+            <div class="menu-group">
+                <label>> SELECT OPPONENT BOT</label>
+                <select id="bot-level">
+                    <option value="none">Practice Alone (Sandbox)</option>
+                    <option value="beginner">Beginner Bot [600 ELO]</option>
+                    <option value="intermediate">Intermediate Bot [1200 ELO]</option>
+                    <option value="advanced">Advanced Bot [2100 ELO]</option>
+                </select>
+            </div>
+
+            <button class="wood-btn" onclick="generateGameAnalysis()">RUN PETKO REVIEW</button>
+            <button class="wood-btn" style="background-color: #3d2516; margin-top: 0;" onclick="resetTrainer()">RESET BOARD</button>
+        </div>
+
+        <div class="analysis-card" id="analysis-panel">
+            <div class="status-title" style="color: #1baca6;">> COACH DEBRIEF [PETKO - 1500 ELO]</div>
+            <div class="coach-feedback-box" id="coach-text">
+                "Analysis complete. Click on any move down below and let's look at how you played."
+            </div>
+
+            <div class="status-title">> PERFORMANCE METRICS</div>
+            <div class="stat-grid">
+                <div class="stat-item"><span><span class="stat-dot badge-book"></span>Book Openings:</span><strong id="stat-book">0</strong></div>
+                <div class="stat-item"><span><span class="stat-dot badge-brilliant"></span>Brilliant (!!):</span><strong id="stat-brilliant">0</strong></div>
+                <div class="stat-item"><span><span class="stat-dot badge-good"></span>Good Moves (!):</span><strong id="stat-good">0</strong></div>
+                <div class="stat-item"><span><span class="stat-dot badge-bad"></span>Mistakes (?):</span><strong id="stat-bad">0</strong></div>
+                <div class="stat-item"><span><span class="stat-dot badge-blunder"></span>Blunders (??):</span><strong id="stat-blunder">0</strong></div>
+            </div>
+            
+            <div class="status-title">> INTERACTIVE TIMELINE BREAKDOWN</div>
+            <div class="review-list" id="analysis-move-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // Plain text entry access key
+        const ACCESS_KEY = "sah"; 
+
+        let chess = new Chess();
+        let selectedSquare = null;
+        let playerColor = 'w';
+        let lastMoveVisuals = null; 
+        let gameMovesTimeline = []; 
+
+        const pieceImages = {
+            'w': { 'p': '4/45/Chess_plt45.svg', 'r': '7/72/Chess_rlt45.svg', 'n': '7/70/Chess_nlt45.svg', 'b': 'b/b1/Chess_blt45.svg', 'q': '1/15/Chess_qlt45.svg', 'k': '4/42/Chess_klt45.svg' },
+            'b': { 'p': 'c/c7/Chess_pdt45.svg', 'r': 'f/ff/Chess_rdt45.svg', 'n': 'e/ef/Chess_ndt45.svg', 'b': '9/98/Chess_bdt45.svg', 'q': '4/47/Chess_qdt45.svg', 'k': 'f/f0/Chess_kdt45.svg' }
+        };
+
+        const openings = {
+            "e4": "King's Pawn Opening", "e4 e5": "Open Game", "e4 e5 Nf3": "King's Knight Opening",
+            "e4 e5 Nf3 Nc6": "Open Game: Normal Variation", "e4 e5 Nf3 Nc6 Bb5": "Ruy Lopez",
+            "e4 e5 Nf3 Nc6 Bc4": "Italian Game", "e4 e5 Nf3 Nc6 c3": "Ponziani Opening",
+            "e4 c5": "Sicilian Defense", "d4": "Queen's Pawn Opening", "d4 d5": "Closed Game", 
+            "d4 d5 c4": "Queen's Gambit", "e4 e6": "French Defense", "e4 d6": "Pirc Defense", 
+            "e4 c6": "Caro-Kann Defense", "d4 Nf6": "Indian Defense", "d4 Nf6 c4": "Indian Defense: Normal Line",
+            "d4 Nf6 c4 g6": "King's Indian Defense", "d4 Nf6 c4 g6 Nc3": "King's Indian Defense: Normal Setup",
+            "d4 Nf6 c4 g6 Nc3 Bg7": "King's Indian Defense: Main Line", "d4 Nf6 c4 g6 Nc3 Bg7 e4": "King's Indian Defense: Classical Progress",
+            "d4 Nf6 c4 g6 Nc3 Bg7 e4 d6": "King's Indian Defense: Classical Line",
+            "d4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3": "King's Indian Defense: Three Knights System",
+            "d4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3 O-O": "King's Indian Defense: Classical Variation",
+            "g3": "Fianchetto Opening", "g3 d5": "King's Fianchetto Defense Setup", "g3 d5 Bg2": "King's Fianchetto Opening",
+            "Nf3": "Reti Opening", "Nf3 d5": "Reti Opening: Standard Setup", "Nf3 d5 c4": "Reti Opening: Reti Gambit",
+            
+            // --- NEW REQS: DUTCH & SEMI-SLAV LINES ---
+            "d4 f5": "Dutch Defense",
+            "d4 f5 c4": "Dutch Defense: Normal Variation",
+            "d4 f5 c4 Nf6": "Dutch Defense: Quiet System",
+            "d4 f5 c4 Nf6 g3": "Dutch Defense: Fianchetto Variation",
+            "d4 f5 c4 Nf6 g3 e6": "Dutch Defense: Modern Classical Setup",
+            "d4 f5 c4 Nf6 g3 e6 Bg2": "Dutch Defense: Stonewall Core Setup",
+            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7": "Dutch Defense: Stonewall Classical Setup",
+            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3": "Dutch Defense: Stonewall Traditional Build",
+            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O": "Dutch Defense: Stonewall Mainline Transition",
+            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O": "Dutch Defense: Stonewall Main Position",
+            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O d5": "Stonewall Dutch Defense",
+            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O d5 b3": "Stonewall Dutch: Modern b3 Development",
+            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O d5 c5": "Stonewall Dutch: Closed Center Framework",
+            "d4 d5 c4 c6": "Slav Defense",
+            "d4 d5 c4 c6 Nf3": "Slav Defense: Three Knights Line",
+            "d4 d5 c4 c6 Nf3 Nf6": "Slav Defense: Two Knights Attack Setup",
+            "d4 d5 c4 c6 Nf3 Nf6 Nc3": "Slav Defense: Three Knights System Setup",
+            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6": "Semi-Slav Defense",
+            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 e3": "Semi-Slav Defense: Accelerated Quiet System",
+            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 e3 Nbd7": "Semi-Slav Defense: Mainline Closed Configuration",
+            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 e3 Nbd7 Bd3": "Semi-Slav Defense: Classical Mainline Branch",
+            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 e3 Nbd7 Bd3 dxc4": "Semi-Slav Defense: Meran Variation",
+            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 Bg5": "Semi-Slav Defense: Anti-Meran / Botvinnik Setup",
+            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 Bg5 h6": "Semi-Slav Defense: Moscow Variation"
+        };
+
+        function checkKey() {
+            const inputField = document.getElementById("passcode").value;
+
+            if (inputField === ACCESS_KEY) {
+                document.getElementById("gate-screen").style.display = "none";
+                document.getElementById("main-app").style.display = "flex";
+                resetTrainer();
+            } else { 
+                alert("ACCESS DENIED: INVALID SYSTEM LOG KEY"); 
+            }
+        }
+
+        function createBoard() {
+            const boardElement = document.getElementById("chessboard");
+            boardElement.innerHTML = "";
+            playerColor = document.getElementById("player-color").value;
+
+            let ranks = Array.from({length: 8}, (_, i) => i); 
+            let files = Array.from({length: 8}, (_, i) => i); 
+
+            if (playerColor === 'b') { ranks.reverse(); files.reverse(); }
+
+            for (let r of ranks) {
+                for (let f of files) {
+                    const square = document.createElement("div");
+                    const squareName = String.fromCharCode(97 + f) + (8 - r);
+                    square.classList.add("square", (r + f) % 2 === 0 ? "light-square" : "dark-square");
+                    square.dataset.square = squareName;
+                    square.addEventListener("click", () => handleSquareClick(squareName));
+                    boardElement.appendChild(square);
+                }
+            }
+            updateBoardState();
+        }
+
+        function handleSquareClick(sq) {
+            if (chess.game_over()) return;
+            if (document.getElementById("bot-level").value !== "none" && chess.turn() !== playerColor) return;
+
+            if (selectedSquare === null) {
+                if (chess.get(sq) && chess.get(sq).color === chess.turn()) { 
+                    selectedSquare = sq; 
+                    document.querySelector(`[data-square="${sq}"]`).classList.add("selected");
+                }
+            } else {
+                document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
+                
+                const move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
+                selectedSquare = null;
+                
+                if (move) {
+                    let evaluationRating = determineMoveRating(move);
+                    gameMovesTimeline.push({ san: move.san, fen: chess.fen(), rating: evaluationRating, side: playerColor });
+                    updateBoardState();
+                    
+                    if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); return; }
+
+                    if (document.getElementById("bot-level").value !== "none") {
+                        setTimeout(makeBotMove, 400);
+                    }
+                }
+            }
+        }
+
+        function makeBotMove() {
+            const moves = chess.moves({ verbose: true });
+            if (moves.length === 0) return;
+
+            const botDifficulty = document.getElementById("bot-level").value;
+            let selectedMove;
+
+            if (botDifficulty === "beginner") {
+                selectedMove = moves[Math.floor(Math.random() * moves.length)];
+            } else {
+                let bestMove = null;
+                let bestValue = (chess.turn() === 'w') ? -9999 : 9999;
+                const shuffledMoves = moves.sort(() => 0.5 - Math.random());
+
+                for (let m of shuffledMoves) {
+                    let moveObj = chess.move(m.san);
+                    let score = evaluatePosition();
+                    chess.undo();
+
+                    if (botDifficulty === "advanced" && moveObj.san.includes("#")) {
+                        score = (chess.turn() === 'w') ? score + 5000 : score - 5000;
+                    }
+
+                    if (chess.turn() === 'w') { 
+                        if (score > bestValue) { bestValue = score; bestMove = m; }
+                    } else { 
+                        if (score < bestValue) { bestValue = score; bestMove = m; }
+                    }
+                }
+                selectedMove = bestMove || moves[0];
+            }
+
+            let finalMoveObj = chess.move(selectedMove.san);
+            let evaluationRating = determineMoveRating(finalMoveObj);
+            gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: (playerColor === 'w' ? 'b' : 'w') });
+            updateBoardState();
+
+            if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); }
+        }
+
+        function determineMoveRating(move) {
+            const currentHistoryArr = chess.history();
+            const currentHistoryStr = currentHistoryArr.join(" ").trim();
+            
+            let isBook = false;
+            if (openings[currentHistoryStr]) {
+                isBook = true;
+            } else {
+                for (let key in openings) {
+                    if (key.startsWith(currentHistoryStr + " ") || key === currentHistoryStr) { 
+                        isBook = true; 
+                        break; 
+                    }
+                }
+            }
+
+            if (isBook) {
+                lastMoveVisuals = { targetSquare: move.to, symbol: "Book", cssClass: "badge-book" };
+                return { label: "Book", css: "badge-book" };
+            }
+
+            if (move.san.includes("#")) {
+                lastMoveVisuals = { targetSquare: move.to, symbol: "!!", cssClass: "badge-brilliant" };
+                return { label: "Brilliant", css: "badge-brilliant" };
+            }
+
+            const pieceValues = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
+            let currentScore = evaluatePosition();
+            let hungPieceValue = 0;
+            let opponentReplies = chess.moves({ verbose: true });
+            
+            for (let reply of opponentReplies) {
+                if (reply.captured) {
+                    let targetValue = pieceValues[reply.captured];
+                    if (targetValue > hungPieceValue) { hungPieceValue = targetValue; }
+                }
+            }
+
+            let symbol = "!";
+            let label = "Good Move";
+            let cssClass = "badge-good";
+
+            if (hungPieceValue >= 30) {
+                if ((chess.turn() === 'b' && currentScore > 40) || (chess.turn() === 'w' && currentScore < -40)) {
+                    symbol = "!!"; label = "Brilliant"; cssClass = "badge-brilliant";
+                } else {
+                    if (hungPieceValue >= 50) {
+                        symbol = "??"; label = "Blunder"; cssClass = "badge-blunder";
+                    } else {
+                        symbol = "?"; label = "Mistake"; cssClass = "badge-bad";
+                    }
+                }
+            } else if (move.captured) {
+                symbol = "!"; label = "Good Move"; cssClass = "badge-good";
+            } else {
+                symbol = "!"; label = "Good Move"; cssClass = "badge-good";
+            }
+
+            lastMoveVisuals = { targetSquare: move.to, symbol: symbol, cssClass: cssClass };
+            return { label: label, css: cssClass };
+        }
+
+        function generateGameAnalysis() {
+            if (gameMovesTimeline.length === 0) {
+                alert("Play some tactical moves first so I can analyze your game!");
+                return;
+            }
+
+            let counts = { "Book": 0, "Brilliant": 0, "Good Move": 0, "Mistake": 0, "Blunder": 0 };
+            let firstBlunderMove = null;
+            let firstBrilliantMove = null;
+            
+            const listContainer = document.getElementById("analysis-move-list");
+            listContainer.innerHTML = "";
+
+            gameMovesTimeline.forEach((moveData, index) => {
+                if (counts[moveData.rating.label] !== undefined) {
+                    counts[moveData.rating.label]++;
+                }
+
+                if (moveData.rating.label === "Blunder" && !firstBlunderMove) firstBlunderMove = moveData.san;
+                if (moveData.rating.label === "Brilliant" && !firstBrilliantMove) firstBrilliantMove = moveData.san;
+
+                const moveBadge = document.createElement("span");
+                moveBadge.classList.add("review-move");
+                let moveNum = Math.floor(index / 2) + 1;
+                let prefix = (index % 2 === 0) ? `${moveNum}.` : `${moveNum}...`;
+                
+                moveBadge.innerHTML = `${prefix} <strong>${moveData.san}</strong> <span class="stat-dot ${moveData.rating.css}" style="margin:0;"></span>`;
+                
+                moveBadge.onclick = () => {
+                    chess.load(moveData.fen);
+                    lastMoveVisuals = null; 
+                    updateBoardViewOnly();
+                };
+                listContainer.appendChild(moveBadge);
+            });
+
+            document.getElementById("stat-book").innerText = counts["Book"];
+            document.getElementById("stat-brilliant").innerText = counts["Brilliant"];
+            document.getElementById("stat-good").innerText = counts["Good Move"];
+            document.getElementById("stat-bad").innerText = counts["Mistake"];
+            document.getElementById("stat-blunder").innerText = counts["Blunder"];
+
+            let coachExplanationText = "";
+            let gameIsOver = chess.game_over();
+            let finalResultText = "";
+
+            if (gameIsOver) {
+                if (chess.in_checkmate()) {
+                    finalResultText = "Aaand that's checkmate. Game over. ";
+                } else if (chess.in_draw() || chess.in_stalemate()) {
+                    finalResultText = "Draw. Board is completely locked up. ";
+                }
+            }
+
+            if (counts["Blunder"] > 0) {
+                coachExplanationText = '💬 You: "might just take that"<br><br>💬 Petko says: ' + finalResultText + 'You were hanging in there, but playing <strong>' + firstBlunderMove + '</strong> was a massive blunder. You completely gave away a piece for free! Keep your eyes open next time.';
+            } else if (counts["Mistake"] > 2) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Not a bad attempt, but you made a few critical mistakes. At my level (1500 ELO), players will punish you instantly for giving up control of the center like that.';
+            } else if (counts["Brilliant"] > 0) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Wow, okay! Playing <strong>' + firstBrilliantMove + '</strong> was actually a brilliant find. You created an amazing tactical attack out of nowhere. I\'m impressed!';
+            } else if (counts["Book"] > 2) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Solid opening! Your early moves perfectly followed established book theory. You did a great job securing your king before starting the mid-game fight.';
+            } else {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'A clean game. You didn\'t make any catastrophic errors or blunders. Let\'s start another match and see if you can find some faster attacking lines!';
+            }
+
+            document.getElementById("coach-text").innerHTML = coachExplanationText;
+            document.getElementById("analysis-panel").style.display = "flex";
+            document.getElementById("analysis-panel").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateBoardViewOnly() {
+            document.querySelectorAll(".square").forEach(sq => {
+                sq.querySelectorAll('.piece').forEach(p => p.remove());
+                sq.querySelectorAll('.eval-badge').forEach(b => b.remove());
+                
+                const piece = chess.get(sq.dataset.square);
+                if (piece) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages[piece.color][piece.type]}`;
+                    img.classList.add("piece");
+                    sq.appendChild(img);
+                }
+            });
+            calculateCapturedPieces();
+            checkBoardState();
+        }
+
+        function evaluatePosition() {
+            const values = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
+            let totalEvaluation = 0;
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    let sq = String.fromCharCode(97 + col) + (8 - row);
+                    let p = chess.get(sq);
+                    if (p) { totalEvaluation += (p.color === 'w') ? values[p.type] : -values[p.type]; }
+                }
+            }
+            return totalEvaluation;
+        }
+
+        function checkBoardState() {
+            let matches = true;
+            document.querySelectorAll(".square").forEach(sq => {
+                const squareName = sq.dataset.square;
+                const enginePiece = chess.get(squareName);
+                const visualPieceImg = sq.querySelector(".piece");
+
+                if (enginePiece && !visualPieceImg) {
+                    console.warn(`Validation Error: Piece missing visually on ${squareName}. Re-syncing.`);
+                    matches = false;
+                } else if (!enginePiece && visualPieceImg) {
+                    console.warn(`Validation Error: Ghost piece found visually on ${squareName}. Removing.`);
+                    visualPieceImg.remove();
+                    matches = false;
+                }
+            });
+            return matches;
+        }
+
+        function updateBoardState() {
+            document.querySelectorAll(".square").forEach(sq => {
+                sq.querySelectorAll('.piece').forEach(p => p.remove());
+                sq.querySelectorAll('.eval-badge').forEach(b => b.remove());
+                
+                const piece = chess.get(sq.dataset.square);
+                if (piece) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages[piece.color][piece.type]}`;
+                    img.classList.add("piece");
+                    sq.appendChild(img);
+                }
+
+                if (lastMoveVisuals && lastMoveVisuals.targetSquare === sq.dataset.square) {
+                    const badge = document.createElement("div");
+                    badge.classList.add("eval-badge", lastMoveVisuals.cssClass);
+                    badge.innerText = lastMoveVisuals.symbol;
+                    sq.appendChild(badge);
+                }
+            });
+
+            calculateCapturedPieces();
+            checkBoardState();
+
+            const history = chess.history();
+            const historyStr = history.join(" ").trim();
+            let detectedOpening = "Classic Chess Sandbox";
+            
+            if (openings[historyStr]) {
+                detectedOpening = openings[historyStr];
+            } else {
+                for (let key in openings) {
+                    if (historyStr.startsWith(key)) detectedOpening = openings[key] + " ...";
+                }
+            }
+            if(history.length === 0) detectedOpening = "Starting Position";
+            document.getElementById("opening-name").innerText = detectedOpening;
+            document.getElementById("move-log").innerText = historyStr || "1. ...";
+        }
+
+        function calculateCapturedPieces() {
+            const startingCounts = { 'p': 8, 'n': 2, 'b': 2, 'r': 2, 'q': 1 };
+            const currentCounts = {
+                'w': { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 },
+                'b': { 'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0 }
+            };
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    let sq = String.fromCharCode(97 + col) + (8 - row);
+                    let p = chess.get(sq);
+                    if (p && p.type !== 'k') { currentCounts[p.color][p.type]++; }
+                }
+            }
+
+            const whiteTray = document.getElementById("captured-white");
+            whiteTray.innerHTML = "";
+            for (let type in startingCounts) {
+                let missing = startingCounts[type] - currentCounts['w'][type];
+                for(let i = 0; i < missing; i++) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages['w'][type]}`;
+                    img.classList.add("captured-img");
+                    whiteTray.appendChild(img);
+                }
+            }
+
+            const blackTray = document.getElementById("captured-black");
+            blackTray.innerHTML = "";
+            for (let type in startingCounts) {
+                let missing = startingCounts[type] - currentCounts['b'][type];
+                for(let i = 0; i < missing; i++) {
+                    const img = document.createElement("img");
+                    img.src = `https://upload.wikimedia.org/wikipedia/commons/${pieceImages['b'][type]}`;
+                    img.classList.add("captured-img");
+                    blackTray.appendChild(img);
+                }
+            }
+        }
+
+        function resetTrainer() { 
+            chess.reset();
+            selectedSquare = null; 
+            lastMoveVisuals = null; 
+            gameMovesTimeline = []; 
+            document.getElementById("analysis-panel").style.display = "none";
+            createBoard();
+            
+            if (document.getElementById("player-color").value === 'b' && document.getElementById("bot-level").value !== "none") {
+                setTimeout(makeBotMove, 500);
+            }
+        }
+    </script>
+</body>
+</html>
