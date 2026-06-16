@@ -150,7 +150,7 @@
                 "Analysis complete. Click on any move down below and let's look at how you played."
             </div>
 
-            <div class="status-title">> PERFORMANCE METRICS</div>
+            <div class="status-title">> PLAYER PERFORMANCE METRICS</div>
             <div class="stat-grid">
                 <div class="stat-item"><span><span class="stat-dot badge-book"></span>Book Openings:</span><strong id="stat-book">0</strong></div>
                 <div class="stat-item"><span><span class="stat-dot badge-brilliant"></span>Brilliant (!!):</span><strong id="stat-brilliant">0</strong></div>
@@ -165,7 +165,6 @@
     </div>
 
     <script>
-        // The exact verification key string
         const ACCESS_KEY = "pasvord.sah.otvaranja."; 
 
         let chess = new Chess();
@@ -193,31 +192,13 @@
             "d4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3 O-O": "King's Indian Defense: Classical Variation",
             "g3": "Fianchetto Opening", "g3 d5": "King's Fianchetto Defense Setup", "g3 d5 Bg2": "King's Fianchetto Opening",
             "Nf3": "Reti Opening", "Nf3 d5": "Reti Opening: Standard Setup", "Nf3 d5 c4": "Reti Opening: Reti Gambit",
-            
-            "d4 f5": "Dutch Defense",
-            "d4 f5 c4": "Dutch Defense: Normal Variation",
-            "d4 f5 c4 Nf6": "Dutch Defense: Quiet System",
-            "d4 f5 c4 Nf6 g3": "Dutch Defense: Fianchetto Variation",
-            "d4 f5 c4 Nf6 g3 e6": "Dutch Defense: Modern Classical Setup",
-            "d4 f5 c4 Nf6 g3 e6 Bg2": "Dutch Defense: Stonewall Core Setup",
-            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7": "Dutch Defense: Stonewall Classical Setup",
-            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3": "Dutch Defense: Stonewall Traditional Build",
-            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O": "Dutch Defense: Stonewall Mainline Transition",
-            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O": "Dutch Defense: Stonewall Main Position",
-            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O d5": "Stonewall Dutch Defense",
-            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O d5 b3": "Stonewall Dutch: Modern b3 Development",
-            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O d5 c5": "Stonewall Dutch: Closed Center Framework",
-            "d4 d5 c4 c6": "Slav Defense",
-            "d4 d5 c4 c6 Nf3": "Slav Defense: Three Knights Line",
-            "d4 d5 c4 c6 Nf3 Nf6": "Slav Defense: Two Knights Attack Setup",
-            "d4 d5 c4 c6 Nf3 Nf6 Nc3": "Slav Defense: Three Knights System Setup",
-            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6": "Semi-Slav Defense",
-            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 e3": "Semi-Slav Defense: Accelerated Quiet System",
-            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 e3 Nbd7": "Semi-Slav Defense: Mainline Closed Configuration",
-            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 e3 Nbd7 Bd3": "Semi-Slav Defense: Classical Mainline Branch",
-            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 e3 Nbd7 Bd3 dxc4": "Semi-Slav Defense: Meran Variation",
-            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 Bg5": "Semi-Slav Defense: Anti-Meran / Botvinnik Setup",
-            "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 Bg5 h6": "Semi-Slav Defense: Moscow Variation"
+            "d4 f5": "Dutch Defense", "d4 f5 c4": "Dutch Defense: Normal Variation", "d4 f5 c4 Nf6": "Dutch Defense: Quiet System",
+            "d4 f5 c4 Nf6 g3": "Dutch Defense: Fianchetto Variation", "d4 f5 c4 Nf6 g3 e6": "Dutch Defense: Modern Classical Setup",
+            "d4 f5 c4 Nf6 g3 e6 Bg2": "Dutch Defense: Stonewall Core Setup", "d4 f5 c4 Nf6 g3 e6 Bg2 Be7": "Dutch Defense: Stonewall Classical Setup",
+            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3": "Dutch Defense: Stonewall Traditional Build", "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O": "Dutch Defense: Stonewall Mainline Transition",
+            "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O": "Dutch Defense: Stonewall Main Position", "d4 f5 c4 Nf6 g3 e6 Bg2 Be7 Nf3 O-O O-O d5": "Stonewall Dutch Defense",
+            "d4 d5 c4 c6": "Slav Defense", "d4 d5 c4 c6 Nf3": "Slav Defense: Three Knights Line", "d4 d5 c4 c6 Nf3 Nf6": "Slav Defense: Two Knights Attack Setup",
+            "d4 d5 c4 c6 Nf3 Nf6 Nc3": "Slav Defense: Three Knights System Setup", "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6": "Semi-Slav Defense"
         };
 
         function togglePasswordVisibility() {
@@ -227,9 +208,7 @@
         }
 
         function checkKey() {
-            // .trim() safely removes extra accidental leading/trailing spaces
             const inputField = document.getElementById("passcode").value.trim();
-
             if (inputField === ACCESS_KEY) {
                 document.getElementById("gate-screen").style.display = "none";
                 document.getElementById("main-app").style.display = "flex";
@@ -274,12 +253,16 @@
             } else {
                 document.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
                 
-                const move = chess.move({ from: selectedSquare, to: sq, promotion: 'q' });
+                const movingPiece = chess.get(selectedSquare);
+                let chosenPromotionPiece = 'q'; // Static Auto-Queen Override!
+
+                const activeSide = chess.turn();
+                const move = chess.move({ from: selectedSquare, to: sq, promotion: chosenPromotionPiece });
                 selectedSquare = null;
                 
                 if (move) {
-                    let evaluationRating = determineMoveRating(move);
-                    gameMovesTimeline.push({ san: move.san, fen: chess.fen(), rating: evaluationRating, side: playerColor });
+                    let evaluationRating = determineMoveRating(move, activeSide);
+                    gameMovesTimeline.push({ san: move.san, fen: chess.fen(), rating: evaluationRating, side: activeSide });
                     updateBoardState();
                     
                     if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); return; }
@@ -323,15 +306,16 @@
                 selectedMove = bestMove || moves[0];
             }
 
+            const activeSide = chess.turn();
             let finalMoveObj = chess.move(selectedMove.san);
-            let evaluationRating = determineMoveRating(finalMoveObj);
-            gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: (playerColor === 'w' ? 'b' : 'w') });
+            let evaluationRating = determineMoveRating(finalMoveObj, activeSide);
+            gameMovesTimeline.push({ san: finalMoveObj.san, fen: chess.fen(), rating: evaluationRating, side: activeSide });
             updateBoardState();
 
             if (chess.game_over()) { setTimeout(generateGameAnalysis, 600); }
         }
 
-        function determineMoveRating(move) {
+        function determineMoveRating(move, activeSide) {
             const currentHistoryArr = chess.history();
             const currentHistoryStr = currentHistoryArr.join(" ").trim();
             
@@ -358,7 +342,16 @@
             }
 
             const pieceValues = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
-            let currentScore = evaluatePosition();
+            
+            // Fix 1: If it's a piece trade where you capture something equal or more valuable, it's a good move!
+            if (move.captured) {
+                let movingPieceType = move.piece;
+                if (pieceValues[move.captured] >= pieceValues[movingPieceType] - 10) {
+                    lastMoveVisuals = { targetSquare: move.to, symbol: "!", cssClass: "badge-good" };
+                    return { label: "Good Move", css: "badge-good" };
+                }
+            }
+
             let hungPieceValue = 0;
             let opponentReplies = chess.moves({ verbose: true });
             
@@ -373,20 +366,12 @@
             let label = "Good Move";
             let cssClass = "badge-good";
 
-            if (hungPieceValue >= 30) {
-                if ((chess.turn() === 'b' && currentScore > 40) || (chess.turn() === 'w' && currentScore < -40)) {
-                    symbol = "!!"; label = "Brilliant"; cssClass = "badge-brilliant";
+            if (hungPieceValue >= 40) {
+                if (hungPieceValue >= 50) {
+                    symbol = "??"; label = "Blunder"; cssClass = "badge-blunder";
                 } else {
-                    if (hungPieceValue >= 50) {
-                        symbol = "??"; label = "Blunder"; cssClass = "badge-blunder";
-                    } else {
-                        symbol = "?"; label = "Mistake"; cssClass = "badge-bad";
-                    }
+                    symbol = "?"; label = "Mistake"; cssClass = "badge-bad";
                 }
-            } else if (move.captured) {
-                symbol = "!"; label = "Good Move"; cssClass = "badge-good";
-            } else {
-                symbol = "!"; label = "Good Move"; cssClass = "badge-good";
             }
 
             lastMoveVisuals = { targetSquare: move.to, symbol: symbol, cssClass: cssClass };
@@ -399,26 +384,32 @@
                 return;
             }
 
-            let counts = { "Book": 0, "Brilliant": 0, "Good Move": 0, "Mistake": 0, "Blunder": 0 };
-            let firstBlunderMove = null;
-            let firstBrilliantMove = null;
+            // Fix 2: Keep player and bot counts strictly separated
+            let playerCounts = { "Book": 0, "Brilliant": 0, "Good Move": 0, "Mistake": 0, "Blunder": 0 };
+            let firstPlayerBlunder = null;
+            let firstPlayerBrilliant = null;
             
             const listContainer = document.getElementById("analysis-move-list");
             listContainer.innerHTML = "";
 
             gameMovesTimeline.forEach((moveData, index) => {
-                if (counts[moveData.rating.label] !== undefined) {
-                    counts[moveData.rating.label]++;
-                }
+                let isPlayerMove = (moveData.side === playerColor);
 
-                if (moveData.rating.label === "Blunder" && !firstBlunderMove) firstBlunderMove = moveData.san;
-                if (moveData.rating.label === "Brilliant" && !firstBrilliantMove) firstBrilliantMove = moveData.san;
+                if (isPlayerMove && playerCounts[moveData.rating.label] !== undefined) {
+                    playerCounts[moveData.rating.label]++;
+                    if (moveData.rating.label === "Blunder" && !firstPlayerBlunder) firstPlayerBlunder = moveData.san;
+                    if (moveData.rating.label === "Brilliant" && !firstPlayerBrilliant) firstPlayerBrilliant = moveData.san;
+                }
 
                 const moveBadge = document.createElement("span");
                 moveBadge.classList.add("review-move");
                 let moveNum = Math.floor(index / 2) + 1;
                 let prefix = (index % 2 === 0) ? `${moveNum}.` : `${moveNum}...`;
                 
+                // Colors layout line: distinguishes your moves from bot's moves on timeline
+                let displayStyle = isPlayerMove ? "border: 1px solid #1baca6;" : "opacity: 0.75;";
+                moveBadge.setAttribute("style", displayStyle);
+
                 moveBadge.innerHTML = `${prefix} <strong>${moveData.san}</strong> <span class="stat-dot ${moveData.rating.css}" style="margin:0;"></span>`;
                 
                 moveBadge.onclick = () => {
@@ -429,11 +420,11 @@
                 listContainer.appendChild(moveBadge);
             });
 
-            document.getElementById("stat-book").innerText = counts["Book"];
-            document.getElementById("stat-brilliant").innerText = counts["Brilliant"];
-            document.getElementById("stat-good").innerText = counts["Good Move"];
-            document.getElementById("stat-bad").innerText = counts["Mistake"];
-            document.getElementById("stat-blunder").innerText = counts["Blunder"];
+            document.getElementById("stat-book").innerText = playerCounts["Book"];
+            document.getElementById("stat-brilliant").innerText = playerCounts["Brilliant"];
+            document.getElementById("stat-good").innerText = playerCounts["Good Move"];
+            document.getElementById("stat-bad").innerText = playerCounts["Mistake"];
+            document.getElementById("stat-blunder").innerText = playerCounts["Blunder"];
 
             let coachExplanationText = "";
             let gameIsOver = chess.game_over();
@@ -441,22 +432,23 @@
 
             if (gameIsOver) {
                 if (chess.in_checkmate()) {
-                    finalResultText = "Aaand that's checkmate. Game over. ";
+                    finalResultText = "Checkmate achieved. Game over. ";
                 } else if (chess.in_draw() || chess.in_stalemate()) {
                     finalResultText = "Draw. Board is completely locked up. ";
                 }
             }
 
-            if (counts["Blunder"] > 0) {
-                coachExplanationText = '💬 You: "might just take that"<br><br>💬 Petko says: ' + finalResultText + 'You were hanging in there, but playing <strong>' + firstBlunderMove + '</strong> was a massive blunder. You completely gave away a piece for free! Keep your eyes open next time.';
-            } else if (counts["Mistake"] > 2) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Not a bad attempt, but you made a few critical mistakes. At my level (1500 ELO), players will punish you instantly for giving up control of the center like that.';
-            } else if (counts["Brilliant"] > 0) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Wow, okay! Playing <strong>' + firstBrilliantMove + '</strong> was actually a brilliant find. You created an amazing tactical attack out of nowhere. I\'m impressed!';
-            } else if (counts["Book"] > 2) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Solid opening! Your early moves perfectly followed established book theory. You did a great job securing your king before starting the mid-game fight.';
+            // Coach text fix: completely removed "might just take that" line entirely
+            if (playerCounts["Blunder"] > 0) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'You were playing a heavy positional game, but shifting into <strong>' + firstPlayerBlunder + '</strong> was a blunder. It left an opening for the opponent to capture clean material. Watch the squares closely!';
+            } else if (playerCounts["Mistake"] > 2) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Not a bad attempt, but you conceded a bit too much center-board real estate during those trades. At my level (1500 ELO), preserving tactical positions is everything.';
+            } else if (playerCounts["Brilliant"] > 0) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Incredible visibility! Spotting <strong>' + firstPlayerBrilliant + '</strong> was an absolute tactical masterpiece. You broke open the defenses perfectly.';
+            } else if (playerCounts["Book"] > 2) {
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Highly accurate layout! Your opening system perfectly matches grandmaster book databases. Very clean transition into the middle game fight.';
             } else {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'A clean game. You didn\'t make any catastrophic errors or blunders. Let\'s start another match and see if you can find some faster attacking lines!';
+                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Super clean game! You traded with zero major blunders and handled the space nicely. Let\'s setup another match line and keep this streak rolling.';
             }
 
             document.getElementById("coach-text").innerHTML = coachExplanationText;
@@ -502,10 +494,8 @@
                 const visualPieceImg = sq.querySelector(".piece");
 
                 if (enginePiece && !visualPieceImg) {
-                    console.warn(`Validation Error: Piece missing visually on ${squareName}. Re-syncing.`);
                     matches = false;
                 } else if (!enginePiece && visualPieceImg) {
-                    console.warn(`Validation Error: Ghost piece found visually on ${squareName}. Removing.`);
                     visualPieceImg.remove();
                     matches = false;
                 }
