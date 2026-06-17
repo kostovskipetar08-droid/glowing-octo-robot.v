@@ -628,15 +628,15 @@
             }
 
             if (playerCounts["Blunder"] > 0) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Играта ти одеше одлично, но ти го даде  <strong>' + firstPlayerBlunder + '</Strong> за бесплатно пази следен пат, но све е добро тоа не е нешто што малце проблеми нема да решат. !';
+                coachExplanationText = '💬 Petko says: ' + finalResultText += 'Играта ти одеше одлично, но ти го даде  <strong>' + firstPlayerBlunder + '</Strong> за бесплатно пази следен пат, но све е добро тоа не е нешто што малце проблеми нема да решат. !';
             } else if (playerCounts["Mistake"] > 2) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Имаше многу подобри потези.Јас веруваж дека ти ке ги најдеш следен пат,.';
+                coachExplanationText = '💬 Petko says: ' + finalResultText += 'Имаше многу подобри потези.Јас веруваж дека ти ке ги најдеш следен пат,.';
             } else if (playerCounts["Brilliant"] > 0) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Браво за тој преубав брилиантен кај <strong>' + firstPlayerBrilliant + '</strong> Личи кода ке ме стигнеш за кратко.';
+                coachExplanationText = '💬 Petko says: ' + finalResultText += 'Браво за тој преубав брилиантен кај <strong>' + firstPlayerBrilliant + '</strong> Личи кода ке ме стигнеш за кратко.';
             } else if (playerCounts["Book"] > 2) {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Супер отваранje тоа е отваранје што ми се свиѓа.';
+                coachExplanationText = '💬 Petko says: ' + finalResultText += 'Супер отваранje тоа е отваранје што ми се свиѓа.';
             } else {
-                coachExplanationText = '💬 Petko says: ' + finalResultText + 'Добра игра. Ајде ако сакаш ушедна♟️.';
+                coachExplanationText = '💬 Petko says: ' + finalResultText += 'Добра игра. Ајде ако сакаш ушедна♟️.';
             }
 
             document.getElementById("coach-text").innerHTML = coachExplanationText;
