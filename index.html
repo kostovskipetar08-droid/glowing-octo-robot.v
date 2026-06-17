@@ -639,8 +639,10 @@
                 coachExplanationText = '💬 Petko says: ' + finalResultText += 'Добра игра. Ајде ако сакаш ушедна♟️.';
             }
 
-            document.getElementById("coach-text").innerHTML = coachExplanationText;
-            document.getElementById("analysis-panel").style.display = "flex";
+            coachExplanationText.innerHTML = tText;
+
+            ```javascript
+analysisPanel.style.display = "flex";
             document.getElementById("analysis-panel").scrollIntoView({ behavior: 'smooth' });
         }
 
