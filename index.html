@@ -638,14 +638,14 @@
             } else {
                 coachExplanationText = '💬 Petko says: ' + finalResultText += 'Добра игра. Ајде ако сакаш ушедна♟️.';
             }
+    t += "Добра игра. Ајде ако сакаш ушедна♟️ .";
+}
 
-            coachExplanationText.innerHTML = tText;
-
-            ```javascript
+coachExplanationText.innerHTML = tText;
 analysisPanel.style.display = "flex";
-            document.getElementById("analysis-panel").scrollIntoView({ behavior: 'smooth' });
-        }
+coachExplanationText.scrollIntoView({ behavior: 'smooth' });
 
+            [?,
         function updateBoardViewOnly() {
             document.querySelectorAll(".square").forEach(sq => {
                 sq.querySelectorAll('.piece').forEach(p => p.remove());
